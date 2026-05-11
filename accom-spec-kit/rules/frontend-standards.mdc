@@ -1,0 +1,322 @@
+---
+description: Frontend development standards, best practices, and conventions for Accom React projects. Focuses on Vite, Styled Components, and a Multi-Domain Configuration architecture.
+alwaysApply: true
+---
+
+# Frontend Development Standards
+
+> **Note for AI agents**: This document defines the standard for Accom's frontend React applications (e.g., `scripts.wizard`). Always follow these architectural guidelines unless the project's `README.md` explicitly specifies otherwise.
+
+## Table of Contents
+
+- [Technology Stack](#technology-stack)
+- [Project Architecture & Structure](#project-architecture--structure)
+- [Multi-Domain Configuration (The "Wizard" Pattern)](#multi-domain-configuration-the-wizard-pattern)
+- [State Management](#state-management)
+- [Styling & UI](#styling--ui)
+- [API Integration](#api-integration)
+- [Unit Testing Standards (New Requirement)](#unit-testing-standards-new-requirement)
+- [Development Workflow](#development-workflow)
+
+---
+
+## Technology Stack
+
+- **Build Tool**: Vite (blazing fast development server and optimized build).
+- **Language**: JavaScript / React (`.jsx` / `.js`). While strict TypeScript is not currently enforced, code must be clean, predictable, and well-documented.
+- **Routing**: `react-router-dom` using the modern `createBrowserRouter` API.
+- **Styling**: `styled-components` for component-scoped CSS in JS, supplemented by global CSS where necessary.
+- **State Management**: Native React Hooks (`createContext`, `useContext`, `useReducer`).
+- **Internationalization**: Custom setup in `src/i18n`.
+
+---
+
+## Project Architecture & Structure
+
+Accom frontend projects follow a highly modular structure designed to serve multiple clients/domains from a single codebase.
+
+```text
+src/
+├── assets/         # Static assets like client logos, icons, and images.
+├── components/     # Reusable, atomic UI components (Buttons, Inputs, Modals).
+├── i18n/           # Translation files and internationalization logic.
+├── service/        # Core business logic and the crucial multi-domain configs.
+│   └── config/     # Client/domain specific configurations (e.g., config.jsx).
+├── store/          # Global state definitions (Contexts and Reducers).
+├── styles/         # Global CSS files and Styled Components theme definitions.
+└── views/          # Main page layouts that render dynamically based on config.
+```
+
+### Component Guidelines
+
+- **Functional Components Only**: Always use React Functional Components with Hooks. No Class components.
+- **Single Responsibility**: A component should do one thing well. If it grows too large, split it into smaller sub-components.
+- **File Naming**: Use `PascalCase` for component files (e.g., `ButtonPrimary.jsx`).
+
+---
+
+## Multi-Domain Configuration (The "Wizard" Pattern)
+
+Accom frontends are built **once** but serve multiple domains/clients. The UI and behavior adapt dynamically based on the domain accessing the application.
+
+- **Configuration File**: The heart of this system lives in `src/service/config/total/config.jsx` (or similar paths).
+- **Dynamic Rendering**: `src/views` contains generic view templates that read from the `config.jsx` object to determine which fields, logos, texts, and colors to display.
+- **Never Hardcode Client Data**: Never hardcode client-specific text or logic inside a `View` or `Component`. Always extract it to the configuration files.
+
+```jsx
+// Example concept of how views consume configuration
+import { useConfig } from '../store/ConfigContext';
+
+export const DynamicFormView = () => {
+    const { domainConfig } = useConfig();
+    
+    return (
+        <Container theme={domainConfig.themeColor}>
+            <Logo src={domainConfig.logoUrl} />
+            <h1>{domainConfig.title}</h1>
+            {domainConfig.fields.map(field => (
+                <DynamicInput key={field.id} type={field.type} label={field.label} />
+            ))}
+        </Container>
+    );
+};
+```
+
+---
+
+## State Management
+
+We avoid heavy third-party state libraries (like Redux) in favor of React's native capabilities.
+
+- **Global State**: Managed via `createContext` and `useReducer` inside the `src/store/` directory.
+- **Local State**: Use `useState` or `useReducer` for state that doesn't need to be shared across the app.
+- **Structure**: Group Context Providers logically (e.g., `ConfigProvider`, `UserProvider`, `WizardStepProvider`) and wrap them at the top level of the app.
+
+```jsx
+// src/store/WizardContext.jsx
+import { createContext, useReducer, useContext } from 'react';
+
+const WizardContext = createContext();
+
+const wizardReducer = (state, action) => {
+    switch (action.type) {
+        case 'SET_STEP': return { ...state, currentStep: action.payload };
+        default: return state;
+    }
+};
+
+export const WizardProvider = ({ children }) => {
+    const [state, dispatch] = useReducer(wizardReducer, { currentStep: 1 });
+    return (
+        <WizardContext.Provider value={{ state, dispatch }}>
+            {children}
+        </WizardContext.Provider>
+    );
+};
+
+export const useWizard = () => useContext(WizardContext);
+```
+
+---
+
+## Styling & UI
+
+All frontend projects must adhere to a strict **Mobile First** approach and maintain a clean, scalable CSS architecture.
+
+### CSS & Mobile First Standards
+
+- **Mobile First Approach**: Write default CSS rules for the smallest viewports (mobile devices) outside of any media queries. Use `min-width` media queries to progressively enhance the design for larger screens (tablet, desktop).
+- **Breakpoints**: Standardize breakpoints across the application (e.g., `576px` for sm, `768px` for md, `992px` for lg, `1200px` for xl).
+- **CSS Variables (Custom Properties)**: Use CSS variables for colors, typography, and spacing to ensure consistency and facilitate theming.
+- **Naming Conventions**: For standard CSS/SCSS (outside of styled-components), use BEM (Block Element Modifier) methodology to keep selectors flat and modular.
+- **Avoid `!important`**: Never use `!important` unless absolutely necessary (e.g., overriding a utility class).
+
+### Styled Components Practices
+
+- **Tool**: `styled-components`.
+- **Global Styles**: Defined in `src/styles/` (e.g., resets, global fonts) and injected using `createGlobalStyle`.
+- **Component Styles**: Defined in the same file as the component or in a dedicated `Component.styles.jsx` file to keep the logic clean.
+- **Theming**: Use the `<ThemeProvider>` from `styled-components` to inject client-specific colors (derived from the multi-domain config) into the components.
+
+```jsx
+import styled from 'styled-components';
+
+export const ActionButton = styled.button`
+  background-color: ${props => props.theme.primaryColor || '#000'};
+  color: #fff;
+  border-radius: 4px;
+  padding: 10px 20px;
+  
+  /* Mobile default padding */
+  padding: 12px 16px;
+
+  /* Desktop enhancement via Mobile First media query */
+  @media (min-width: 768px) {
+    padding: 10px 20px;
+  }
+  
+  &:hover {
+    opacity: 0.8;
+  }
+`;
+```
+
+---
+
+## API Integration
+
+- **Tool**: Native `fetch` API. No Axios or external libraries required unless strictly necessary for a complex edge case.
+- **Network Architecture**: The frontend wizard communicates with an internal API (e.g., API Wizard) deployed on a private internal network. 
+- **Authentication**: No OAuth/Passport tokens are used for these internal API calls.
+- **Service Abstraction**: Keep all `fetch` calls abstracted inside the `src/service/` directory. Do not write `fetch` directly inside React components.
+
+```javascript
+// src/service/api.js
+export const submitWizardData = async (data) => {
+    try {
+        const response = await fetch('http://internal-api.wizard.local/submit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+        
+        if (!response.ok) throw new Error('API Error');
+        return await response.json();
+    } catch (error) {
+        console.error("Failed to submit data", error);
+        throw error;
+    }
+};
+```
+
+---
+
+## Unit Testing Standards (New Requirement)
+
+While unit testing has not been historically enforced, **all new development must include Unit Tests**. Since the build tool is Vite, the standard testing stack is **Vitest** + **React Testing Library**.
+
+- **Frameworks**: Vitest (test runner) and React Testing Library (DOM rendering and assertions).
+- **File Naming**: `ComponentName.test.jsx` or `serviceName.test.js`, located right next to the file being tested.
+- **TDD Approach**: Write the test first, then implement the component.
+
+### What to Test:
+1. **Config Service (`src/service/config`)**: Ensure the config parser correctly returns expected data for different mocked domains.
+2. **Context/Store (`src/store`)**: Ensure reducers correctly transform state based on actions.
+3. **Complex Components (`src/components`)**: Test conditional rendering, user interactions (clicks, typing), and prop passing.
+
+```jsx
+// Example: src/components/ActionButton.test.jsx
+import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
+import ActionButton from './ActionButton';
+import { ThemeProvider } from 'styled-components';
+
+describe('ActionButton', () => {
+    it('renders correctly and handles click', () => {
+        const handleClick = vi.fn();
+        const theme = { primaryColor: '#f00' };
+
+        render(
+            <ThemeProvider theme={theme}>
+                <ActionButton onClick={handleClick}>Next Step</ActionButton>
+            </ThemeProvider>
+        );
+
+        const button = screen.getByText('Next Step');
+        expect(button).toBeInTheDocument();
+        
+        fireEvent.click(button);
+        expect(handleClick).toHaveBeenCalledTimes(1);
+    });
+});
+```
+
+*(Note: Functional End-to-End testing is handled separately via Playwright, as defined in `playwright-standards.mdc`).*
+
+---
+
+## Webpack Configuration Standards (For Non-Vite Projects)
+
+For projects utilizing Webpack as a bundler (e.g., CodeIgniter landings), the configuration must be optimized for production.
+
+### Best Practices Applied
+- **Modern Syntax**: Use clean CommonJS or ES modules syntax.
+- **Optimization & Minification**: Use `TerserPlugin` for JS and `CssMinimizerPlugin` for CSS.
+- **Vendor Splitting**: Use `optimization.splitChunks` to extract third-party libraries (like jQuery, Bootstrap, Slick) into a separate `vendor.js` file instead of concatenating them manually. This improves browser caching.
+- **Caching**: Use `[contenthash]` in filenames so browsers only download files when their content changes.
+- **Legacy Compatibility**: Keep `ProvidePlugin` for legacy libraries like jQuery, but optimize how they are loaded.
+
+### Reference `webpack.config.js`
+
+```javascript
+const path = require("path");
+const webpack = require("webpack");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
+const TerserPlugin = require("terser-webpack-plugin");
+
+module.exports = {
+  mode: "production",
+  entry: {
+    // Define entry points clearly
+    main: "./public/template/js/components/main.js",
+    css: "./public/template/js/cssLoader.js",
+  },
+  output: {
+    // Use contenthash for cache busting
+    filename: "[name].[contenthash].js",
+    path: path.resolve(__dirname, "public/template/build"),
+    clean: true, // Clean the output directory before emit
+  },
+  resolve: {
+    extensions: [".js", ".css"],
+  },
+  optimization: {
+    minimize: true,
+    minimizer: [
+      new TerserPlugin({
+        terserOptions: { compress: { drop_console: true } },
+      }),
+      new CssMinimizerPlugin(),
+    ],
+    // Extract third-party libraries into a vendor chunk automatically
+    splitChunks: {
+      cacheGroups: {
+        vendor: {
+          test: /[\\/]node_modules[\\/]|[\\/]public[\\/]template[\\/]vendor[\\/]/,
+          name: "vendor",
+          chunks: "all",
+        },
+      },
+    },
+  },
+  module: {
+    rules: [
+      {
+        test: /\.css$/,
+        use: [MiniCssExtractPlugin.loader, "css-loader"],
+      },
+    ],
+  },
+  plugins: [
+    new webpack.ProvidePlugin({
+      $: "jquery",
+      jQuery: "jquery",
+      "window.jQuery": "jquery", // Important for legacy libraries
+    }),
+    new MiniCssExtractPlugin({
+      filename: "style.[contenthash].css", // Cache busting for CSS
+    }),
+  ],
+};
+```
+
+---
+
+## Development Workflow
+
+1. **Branching**: Follow the standard `feature/YYYYMMDD_description` or `hotfix/YYYYMMDD_description`.
+2. **Specs**: Implement atomic specs generated by `/generate-specs-from-us`.
+3. **Testing**: Write Vitest unit tests for the newly created React code.
+4. **Completion**: Run `/complete-spec` when the component/service is implemented and tests pass.
+5. **Code Review**: Push the branch to Bitbucket and create a Pull Request for manual review.

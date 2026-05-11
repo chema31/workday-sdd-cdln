@@ -1,0 +1,1 @@
+../../accom-specs/.commands/complete-spec.md

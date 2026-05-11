@@ -1,0 +1,27 @@
+schema: spec-driven
+
+context: |
+  Tech stack: TypeScript, Node.js, Express, Prisma, Domain-Driven Design (DDD)
+  Architecture: Clean Architecture with Domain, Application, and Presentation layers
+  We use conventional commits
+  Domain: LTI (Leadership. Technology. Impact) ATS platform
+  All code, comments, documentation, and technical artifacts must be in English
+
+  Project specs (single source of truth): All artifact creation and implementation MUST follow the project's technical context in accom-specs/. Read and apply these when creating or implementing:
+  - rules/base-standards.mdc — core principles, TDD, language standards, links to backend/frontend/docs standards
+  - rules/backend-standards.mdc — API, database, testing, security (backend changes)
+  - rules/frontend-standards.mdc — React, UI/UX (frontend changes)
+  - rules/api-spec.yml — API contracts and endpoint definitions
+  - rules/data-model.md — domain and data model
+  - rules/documentation-standards.mdc — docs structure and maintenance
+  For implementation: adopt the relevant agent from accom-specs/.agents/ (e.g. backend-developer.md for backend, frontend-developer.md for frontend). Use accom-specs/.commands/ (e.g. develop-backend.md, develop-frontend.md) for workflow guidance when applicable.
+
+# Per-artifact rules (optional)
+# Add custom rules for specific artifacts.
+rules:
+  # Global: apply accom-specs when creating any artifact
+  _global:
+    - Before creating any artifact, read and apply rules/base-standards.mdc
+    - For backend-related artifacts, read rules/backend-standards.mdc and adopt guidelines from accom-specs/.agents/backend-developer.md
+    - For frontend-related artifacts, read rules/frontend-standards.mdc and adopt guidelines from accom-specs/.agents/frontend-developer.md
+    - Use rules/api-spec.yml and rules/data-model.md for API and data consistency in specs and tasks

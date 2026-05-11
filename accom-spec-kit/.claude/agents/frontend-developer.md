@@ -1,0 +1,1 @@
+../../accom-specs/.agents/frontend-developer.md

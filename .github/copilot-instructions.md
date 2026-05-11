@@ -1,0 +1,1 @@
+../accom-spec-kit/.github/copilot-instructions.md

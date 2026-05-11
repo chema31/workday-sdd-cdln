@@ -1,0 +1,623 @@
+---
+description: Backend development standards, best practices, and conventions for Accom projects. Covers Laravel (APIs and Admin Panels), CodeIgniter 4 (commercial websites), and Python (standalone data processes).
+alwaysApply: true
+---
+
+# Backend Development Standards
+
+> **Note for AI agents**: When working on a project, read the project's `README.md` first to identify the application type and any project-specific overrides. If this information is missing from the README, ask the developer to include it.
+
+## Table of Contents
+
+- [Application Types](#application-types)
+- [General Principles](#general-principles)
+- [Laravel Standards](#laravel-standards)
+  - [Laravel APIs](#laravel-apis)
+  - [Laravel Admin Panels](#laravel-admin-panels)
+  - [Jobs and Queues](#jobs-and-queues)
+  - [Authentication](#authentication)
+  - [Laravel Testing](#laravel-testing)
+- [CodeIgniter 4 Standards](#codeigniter-4-standards)
+- [Python Process Standards](#python-process-standards)
+- [Database Standards](#database-standards)
+- [API Design Standards](#api-design-standards)
+- [Security Best Practices](#security-best-practices)
+- [Development Workflow](#development-workflow)
+
+---
+
+## Application Types
+
+Accom develops three types of backend applications. Every project README **must** state which type it is.
+
+| Type | Framework | Purpose | Example |
+|------|-----------|---------|---------|
+| **Laravel API** | Laravel 11/12 + Passport | REST APIs for mobile/frontend apps | `git@bitbucket.org:we-accom/abla.git` |
+| **Laravel Admin Panel** | Laravel 11/12 + Filament (new) / Orchid (legacy) | Internal management interfaces | `git@bitbucket.org:we-accom/ama.git` |
+| **CodeIgniter 4 Website** | CodeIgniter 4 | Simple commercial websites (≤1 DB) | `git@bitbucket.org:we-accom/tarifasdeluzygas.es.git` |
+| **Python Process** | Python 3.12 | Standalone data-intensive processes | `/python` dir inside Laravel projects |
+
+---
+
+## General Principles
+
+These apply to **all** application types:
+
+- **SOLID Principles**: Apply strictly. Business logic must not live in controllers.
+- **Single Responsibility**: Each class/function has one reason to change.
+- **English Only**: All code, comments, commits, PR titles, and documentation must be in English.
+- **No secrets in git**: Never commit `.env` or credentials. Use environment variables.
+- **Conventional Commits**: Use descriptive commit messages in English.
+- **Incremental Changes**: Small, focused, reviewable changes. Never mix concerns in one commit.
+- **Test-Driven Development (TDD)**: Write failing tests first for all new functionality (except CI4 and exploratory Python work — see specific sections).
+
+---
+
+## Laravel Standards
+
+### Version and Requirements
+
+- **Laravel**: Use the latest stable version at project creation time (currently 11 or 12).
+- **PHP**: Minimum **PHP 8.2**. Use modern PHP features (named arguments, readonly properties, enums, match expressions, fibers where appropriate).
+- **Composer**: Always commit `composer.lock`.
+
+### Architecture: MVC + Service Layer
+
+Laravel projects follow **MVC with a vertical Service Layer**:
+
+```
+app/
+├── Http/
+│   ├── Controllers/         # Thin controllers — no business logic here
+│   ├── Requests/            # Form Request validation classes
+│   └── Resources/           # API Resources for response transformation
+├── Models/                  # Eloquent models (relationships, scopes, casts)
+├── Services/                # Business logic layer (vertically organized)
+│   ├── Auth/
+│   ├── Billing/
+│   ├── Notifications/
+│   └── [Domain]/            # One subdirectory per domain area
+├── Jobs/                    # Queue jobs for async/parallel processes
+├── Policies/                # Authorization policies
+├── Providers/               # Service providers
+├── Exceptions/              # Custom exception classes
+└── Enums/                   # PHP 8.1+ enums for domain constants
+```
+
+#### Controllers: Keep Them Thin
+
+Controllers must only:
+1. Parse and validate the HTTP request (via Form Requests).
+2. Call one or more Service methods.
+3. Return an HTTP response.
+
+```php
+// ✅ Correct: thin controller
+class PositionController extends Controller
+{
+    public function __construct(private readonly PositionService $positionService) {}
+
+    public function store(StorePositionRequest $request): JsonResponse
+    {
+        $position = $this->positionService->create($request->validated());
+        return response()->json(new PositionResource($position), 201);
+    }
+}
+
+// ❌ Wrong: business logic in controller
+class PositionController extends Controller
+{
+    public function store(Request $request): JsonResponse
+    {
+        $data = $request->all();
+        if (!$data['title']) { return response()->json(['error' => 'Title required'], 422); }
+        $position = Position::create($data); // direct model call
+        // send email here, update stats here, etc.
+        return response()->json($position);
+    }
+}
+```
+
+#### Services: Business Logic Layer
+
+- One service class per domain subdirectory.
+- Services are injected via the constructor (dependency injection).
+- Services call Eloquent models directly (no Repository layer needed).
+- Services must not know about HTTP (no `Request`, no `Response`).
+
+```php
+// app/Services/Position/PositionService.php
+class PositionService
+{
+    public function create(array $data): Position
+    {
+        // Business logic here
+        $position = Position::create($data);
+        // dispatch jobs, fire events, etc.
+        return $position;
+    }
+}
+```
+
+#### Form Requests: Validation
+
+Always use Form Request classes for input validation. Never validate in controllers manually.
+
+```php
+// app/Http/Requests/StorePositionRequest.php
+class StorePositionRequest extends FormRequest
+{
+    public function rules(): array
+    {
+        return [
+            'title' => ['required', 'string', 'max:255'],
+            'description' => ['required', 'string'],
+        ];
+    }
+}
+```
+
+### Eloquent ORM
+
+- Use **Eloquent** as the ORM. No custom Repository layer.
+- Define **relationships** in models (`hasMany`, `belongsTo`, `morphTo`, etc.).
+- Use **query scopes** for reusable query logic.
+- Use **model casts** for type safety (`casts` array).
+- Use **API Resources** (`php artisan make:resource`) for response transformation — never return raw Eloquent models in API responses.
+- Avoid `Model::all()` on large tables. Always paginate or filter.
+
+```php
+class Position extends Model
+{
+    protected $fillable = ['title', 'description', 'status', 'company_id'];
+
+    protected $casts = [
+        'published_at' => 'datetime',
+        'status' => PositionStatus::class, // PHP enum cast
+    ];
+
+    public function company(): BelongsTo
+    {
+        return $this->belongsTo(Company::class);
+    }
+
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('status', PositionStatus::Active);
+    }
+}
+```
+
+### Laravel APIs
+
+- Use **Laravel Passport** for API authentication (OAuth 2.0).
+- All API routes are under `routes/api.php` and versioned: `/api/v1/...`.
+- Use **API Resources** for all responses.
+- Return consistent JSON response structure:
+
+```json
+// Success
+{ "data": { ... }, "message": "Resource created successfully" }
+
+// Success list
+{ "data": [...], "meta": { "total": 100, "per_page": 15, "current_page": 1 } }
+
+// Error
+{ "message": "Validation failed", "errors": { "field": ["Error description"] } }
+```
+
+- Use appropriate HTTP status codes (200, 201, 204, 400, 401, 403, 404, 422, 500).
+- Handle exceptions globally in `app/Exceptions/Handler.php`.
+
+### Laravel Admin Panels
+
+- **New projects**: Use **Filament** (v3+).
+- **Legacy projects**: Use **Orchid** (maintain existing, do not migrate unless requested).
+- Admin panels live in a separate section, usually under `routes/web.php` with its own middleware group.
+- Admin authentication is separate from API authentication (use Laravel's built-in session auth or Filament's built-in auth).
+
+### Jobs and Queues
+
+Use Laravel Jobs for:
+- Any process that connects to third-party services (emails, SMS, payment gateways, webhooks).
+- Any process that may take > 2 seconds.
+- Any process that needs retry logic.
+- Heavy data processing that should not block the HTTP response.
+
+**Queue driver**: `database` (configured in `.env` as `QUEUE_CONNECTION=database`).
+
+```php
+// app/Jobs/SendWelcomeEmail.php
+class SendWelcomeEmail implements ShouldQueue
+{
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+
+    public int $tries = 3;
+    public int $timeout = 60;
+
+    public function __construct(private readonly User $user) {}
+
+    public function handle(MailService $mailService): void
+    {
+        $mailService->sendWelcome($this->user);
+    }
+
+    public function failed(Throwable $exception): void
+    {
+        Log::error('SendWelcomeEmail failed', ['user_id' => $this->user->id, 'error' => $exception->getMessage()]);
+    }
+}
+
+// Dispatch from a service
+SendWelcomeEmail::dispatch($user);
+```
+
+- Always define `$tries` and `$timeout` on every Job.
+- Always implement the `failed()` method for proper error logging.
+- Run queue worker: `php artisan queue:work --queue=high,default`
+
+### Authentication
+
+- **APIs**: Use **Laravel Passport** (OAuth 2.0). Client credentials or password grant depending on use case.
+- **Admin Panels**: Use Laravel session-based auth or Filament's built-in auth.
+- Always protect routes with appropriate middleware: `auth:api`, `auth:sanctum`, `auth`, etc.
+
+### Laravel Testing
+
+- **Framework**: PHPUnit (included with Laravel via `php artisan test`).
+- **Philosophy**: TDD — write failing test first, then implement.
+- **Minimum coverage**: Aim for coverage of all service methods and all API endpoints.
+- **Test structure**: Feature tests for HTTP endpoints, Unit tests for services and complex logic.
+- **Database**: Use `RefreshDatabase` trait. Use SQLite in-memory for speed, or the configured database with transactions.
+- **Factories**: Use Laravel Model Factories for all test data — never hardcode raw data.
+
+```
+tests/
+├── Feature/
+│   └── Api/
+│       └── PositionTest.php   # HTTP endpoint tests
+└── Unit/
+    └── Services/
+        └── PositionServiceTest.php  # Business logic unit tests
+```
+
+```php
+// Feature test example
+class PositionTest extends TestCase
+{
+    use RefreshDatabase;
+
+    public function test_authenticated_user_can_create_position(): void
+    {
+        $user = User::factory()->create();
+        $token = $user->createToken('test')->accessToken;
+
+        $response = $this->withHeader('Authorization', "Bearer {$token}")
+            ->postJson('/api/v1/positions', [
+                'title' => 'Software Engineer',
+                'description' => 'Join our team',
+            ]);
+
+        $response->assertStatus(201)
+            ->assertJsonStructure(['data' => ['id', 'title']]);
+
+        $this->assertDatabaseHas('positions', ['title' => 'Software Engineer']);
+    }
+}
+```
+
+```php
+// Unit test example
+class PositionServiceTest extends TestCase
+{
+    use RefreshDatabase;
+
+    private PositionService $service;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->service = app(PositionService::class);
+    }
+
+    public function test_creates_position_with_valid_data(): void
+    {
+        $company = Company::factory()->create();
+
+        $position = $this->service->create([
+            'title' => 'Backend Developer',
+            'description' => 'Laravel expert needed',
+            'company_id' => $company->id,
+        ]);
+
+        $this->assertInstanceOf(Position::class, $position);
+        $this->assertEquals('Backend Developer', $position->title);
+    }
+}
+```
+
+**Test naming convention**: `test_[expected_behavior]_[when_condition]` or use `@test` annotation.
+
+**Always test**:
+1. Happy path (valid inputs, expected outputs).
+2. Validation errors (missing required fields, wrong types).
+3. Authorization (unauthenticated and unauthorized requests).
+4. Not found scenarios (404).
+5. Business rule violations.
+
+---
+
+## CodeIgniter 4 Standards
+
+CodeIgniter 4 is used for **simple commercial websites** with at most one database connection. These projects prioritize speed of development over strict architecture.
+
+### Version and Requirements
+
+- **PHP**: Minimum **PHP 8.2**.
+- **CodeIgniter**: Latest stable CI4 version.
+
+### Architecture: Simple MVC
+
+CI4 projects follow a straightforward MVC structure. There is **no service layer** — logic lives directly in controllers, as these sites have minimal business logic.
+
+```
+app/
+├── Controllers/       # One controller per section/feature
+├── Models/            # CI4 Models for DB access
+├── Views/             # One view per route
+├── Config/            # Application configuration
+└── Filters/           # Route filters (auth, CSRF, etc.)
+```
+
+**One View per Route**: Each route renders exactly one view file. Keep views clean — no complex logic in Blade/PHP view files.
+
+```php
+// Controller: simple and direct
+class TarifasController extends BaseController
+{
+    public function index(): string
+    {
+        $model = new TarifaModel();
+        $data = ['tarifas' => $model->findAll()];
+        return view('tarifas/index', $data);
+    }
+}
+```
+
+### Testing in CI4
+
+- Testing is **not mandatory** for CI4 projects (rapid development focus).
+- If tests are written, use CI4's built-in `CIUnitTestCase`.
+
+---
+
+## Python Process Standards
+
+Python processes are **standalone**, autonomous processes designed for data-intensive work. They may be called from Laravel (e.g., via `exec()` or a queue Job) but must be able to run independently.
+
+### Version and Requirements
+
+- **Python**: **3.12+**.
+- **Dependencies**: Managed with `pip` and a `requirements.txt` or `pyproject.toml`.
+- Processes live in a `/python` subdirectory within the project, or as a standalone repository.
+
+### Architecture
+
+Python processes are scripts or small applications. Keep them focused:
+- One main entry point (`main.py` or a CLI command).
+- Separate concerns: data fetching, processing, and output in distinct functions/modules.
+- Use clear function names and type hints.
+
+```python
+# main.py
+from services.data_fetcher import fetch_records
+from services.processor import process_records
+from services.exporter import export_results
+
+def main() -> None:
+    records = fetch_records()
+    processed = process_records(records)
+    export_results(processed)
+
+if __name__ == "__main__":
+    main()
+```
+
+### Type Hints
+
+Always use type hints for function signatures:
+
+```python
+def calculate_rate(price: float, vat: float) -> float:
+    return price * (1 + vat)
+```
+
+### Error Handling
+
+Use Python's standard logging module, not `print()`:
+
+```python
+import logging
+
+logger = logging.getLogger(__name__)
+
+try:
+    result = process_data(records)
+except ValueError as e:
+    logger.error("Invalid data encountered: %s", e)
+    raise
+```
+
+### Testing Python Processes
+
+- **Framework**: `unittest` (Python standard library).
+- **TDD applies**: Write failing tests before implementing functions.
+- Test data-transformation functions and business logic in isolation.
+- Mock external connections (DB, APIs, file system) in tests.
+
+```python
+import unittest
+from unittest.mock import patch, MagicMock
+from services.processor import process_records
+
+class TestProcessRecords(unittest.TestCase):
+
+    def test_returns_empty_list_when_no_records(self):
+        result = process_records([])
+        self.assertEqual(result, [])
+
+    def test_processes_valid_records_correctly(self):
+        records = [{"price": 100.0, "vat": 0.21}]
+        result = process_records(records)
+        self.assertEqual(result[0]["total"], 121.0)
+
+    @patch("services.processor.external_api_call")
+    def test_handles_api_failure_gracefully(self, mock_api):
+        mock_api.side_effect = ConnectionError("API unreachable")
+        with self.assertRaises(ConnectionError):
+            process_records([{"id": 1}])
+
+if __name__ == "__main__":
+    unittest.main()
+```
+
+Run tests: `python -m unittest discover -s tests`
+
+### Deployment
+
+- Python processes are **autonomous**: they can be run independently via cron, Docker, or called from Laravel Jobs.
+- Document the execution method in the project `README.md`.
+- All configuration (DB credentials, API keys) via environment variables, never hardcoded.
+
+---
+
+## Database Standards
+
+| Project Type | Primary DB | ORM/Access |
+|---|---|---|
+| Laravel API / Admin | MySQL | Eloquent |
+| CodeIgniter 4 | MySQL (max 1 DB) | CI4 Model |
+| Python Process | MySQL / PostgreSQL / MongoDB | As needed |
+
+### Laravel Migrations
+
+- All database changes must go through **Laravel migrations**.
+- Migration names must be descriptive: `create_positions_table`, `add_status_to_positions_table`.
+- Never edit existing migrations that have been deployed. Create new ones.
+- Soft deletes (`SoftDeletes` trait) for any entity that may need recovery.
+
+```bash
+php artisan make:migration add_status_to_positions_table --table=positions
+php artisan migrate
+php artisan migrate:rollback  # only in development
+```
+
+### Eloquent Conventions
+
+- Table names: `snake_case` plural (auto-derived by Laravel).
+- Primary key: `id` (unsigned bigint).
+- Timestamps: `created_at`, `updated_at` always included.
+- Foreign keys: `{model}_id` pattern (e.g., `company_id`).
+- Always define `$fillable` (preferred over `$guarded = []`).
+
+---
+
+## API Design Standards
+
+- **Versioning**: Prefix all API routes with `/api/v1/` (or current version).
+- **REST conventions**: Use resource names (plural nouns), not verbs.
+- **Consistent responses**: Use Laravel API Resources for all responses.
+
+```
+GET    /api/v1/positions          # List (paginated)
+GET    /api/v1/positions/{id}     # Show
+POST   /api/v1/positions          # Create
+PUT    /api/v1/positions/{id}     # Full update
+PATCH  /api/v1/positions/{id}     # Partial update
+DELETE /api/v1/positions/{id}     # Delete
+```
+
+### HTTP Status Codes
+
+| Code | When to use |
+|------|-------------|
+| 200 | Success (GET, PUT, PATCH) |
+| 201 | Resource created (POST) |
+| 204 | Success, no content (DELETE) |
+| 400 | Bad request |
+| 401 | Unauthenticated |
+| 403 | Unauthorized (authenticated but forbidden) |
+| 404 | Resource not found |
+| 422 | Validation failed |
+| 500 | Server error |
+
+---
+
+## Security Best Practices
+
+- **Never commit `.env`**. Use `.env.example` with placeholders.
+- **Validate all inputs** via Form Requests (Laravel) or `$this->validate()` (CI4).
+- **Protect routes** with appropriate middleware.
+- **CORS**: Configure explicitly in Laravel (`config/cors.php`). Never use wildcard `*` in production.
+- **SQL Injection**: Always use Eloquent or query builder — never raw queries with interpolated user input.
+- **Mass Assignment**: Always define `$fillable`. Never use `$guarded = []` in production models.
+- **Rate Limiting**: Apply `throttle` middleware to public APIs.
+- **Environment Variables**: Validate required env vars at startup. Document them in `.env.example`.
+
+---
+
+## Development Workflow
+
+### Branch Naming
+
+```
+feature/YYYYMMDD_short_description    # New features
+hotfix/YYYYMMDD_short_description     # Bug fixes in production
+```
+
+Examples:
+```
+feature/20260430_add_position_search
+hotfix/20260430_fix_passport_token_expiry
+```
+
+### Pull Requests
+
+- All changes must go through a **Pull Request** in Bitbucket.
+- PRs require **manual review** before merging.
+- PR title must be descriptive and in English.
+- PR description must include: what changed, why, and how to test it.
+- Never merge your own PR without a second review (except in solo hotfixes when documented).
+
+### CI/CD: Bitbucket Pipelines
+
+- The project uses **Bitbucket Pipelines** for CI/CD.
+- Pipelines run tests automatically on every push.
+- A failing pipeline blocks the PR merge.
+- Configuration lives in `bitbucket-pipelines.yml` at the project root.
+
+### Code Quality Checklist Before PR
+
+For **Laravel**:
+- [ ] `php artisan test` passes (all tests green).
+- [ ] No raw business logic in controllers.
+- [ ] All new endpoints covered by Feature tests.
+- [ ] All new service methods covered by Unit tests.
+- [ ] Migration created for any schema change.
+- [ ] `.env.example` updated if new env vars added.
+- [ ] No `dd()`, `var_dump()`, or debug code left.
+
+For **CodeIgniter 4**:
+- [ ] Application runs without errors.
+- [ ] New routes have a corresponding view.
+- [ ] No credentials hardcoded.
+
+For **Python**:
+- [ ] `python -m unittest discover -s tests` passes.
+- [ ] Type hints on all public functions.
+- [ ] No `print()` — use `logging` module.
+- [ ] `requirements.txt` updated if new packages added.
+
+---
+
+This document is the **single source of truth** for backend standards at Accom. Any project-specific deviation must be documented in the project's own `README.md`.
