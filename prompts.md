@@ -74,3 +74,10 @@ Final state: 24 ACs, 11 tests, 13 specs + Playwright.
 ## 2026-05-12 12:39 — /generate-specs-from-us
 **Args:**
 > openspec/features/20260511-user-management-and-application-bootstrap.md
+
+## 2026-05-12 15:48 — /develop-frontend
+**Args:** none
+
+## 2026-05-12 15:51 — /develop-frontend
+**Args:**
+> openspec/specs/20260512-us001-spec0-tailwind-brand-config.md
