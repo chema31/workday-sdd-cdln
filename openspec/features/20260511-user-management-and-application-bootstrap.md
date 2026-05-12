@@ -281,7 +281,7 @@ ADMIN_NAME=Administrador
   `accom-pink` tokens in `tailwind.config.js`; confirm `npm run dev` compiles without errors.
 - [x] **Spec 1**: Laravel 11 bootstrap — fresh install, Filament 3, Laravel Breeze
   (Blade stack, unused routes disabled), `.env.example` with admin vars.
-- [ ] **Spec 2**: Database migrations — `add_role_and_is_active_to_users_table` +
+- [x] **Spec 2**: Database migrations — `add_role_and_is_active_to_users_table` +
   `create_clock_records_table`.
 - [ ] **Spec 3**: `UserRole` enum + `User` model update — casts, query scopes,
   `canAccessPanel()`, factory states (`admin`, `employee`, `inactive`).
