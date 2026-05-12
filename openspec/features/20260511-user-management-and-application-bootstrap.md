@@ -68,7 +68,11 @@ on which US-002 will build.
 
 ### Employee Dashboard (/dashboard)
 
-- **AC-14**: The dashboard shows a personalized greeting with the employee's name.
+- **AC-14**: The dashboard displays a **time-sensitive greeting** with an **initials avatar**:
+  - Greeting text changes based on the server's current hour: `"¡Buenos días, [Name]!"` (06:00–12:00), `"¡Buenas tardes, [Name]!"` (12:00–20:00), `"¡Buenas noches, [Name]!"` (20:00–06:00).
+  - Avatar: a `40×40px` circle filled with `accom-teal` (`#2BBFB3`), containing the employee's initials (first letter of first name + first letter of last name) in white, `text-sm font-semibold`.
+  - Avatar and greeting are horizontally aligned and vertically centred.
+  - Greeting resolution logic lives in `App\Helpers\TimeGreetingHelper` — no logic in the controller or Blade view.
 - **AC-15**: A table lists all `clock_records` for the **current calendar month**
   (from the 1st of the current month to today, inclusive), with columns: Date,
   Clock-in Time, Clock-out Time, Total Hours Worked. Dates are displayed as
@@ -86,9 +90,90 @@ on which US-002 will build.
   table area displays the message: `"No records for this month yet."` instead of
   an empty table.
 
+### Navigation & Branding
+
+- **AC-21**: Every authenticated frontend page includes a persistent **top navigation bar**
+  (`<x-navbar>` Blade component) with:
+  - Left: Accom logo as an inline SVG using brand teal (`#2BBFB3`). No external image file.
+  - Right: employee's full name (`text-gray-700`) + `"Cerrar sesión"` ghost-button link to `/logout`.
+  - Style: white background, `border-b border-gray-200`, height `h-16`, full-width.
+  - The login page (`/login`) reuses the same layout but shows the logo centred only — no user info.
+
+### Clock Widget Card
+
+- **AC-22**: The clock action area is rendered as a **card widget** (`<x-clock-widget>` Blade component)
+  visually inspired by Factorial's "Fichaje" card:
+  - Card wrapper: `bg-white rounded-xl shadow-sm border border-gray-100 p-6`.
+  - Header row: `"Fichaje"` label in `text-sm font-medium text-gray-500` (left) + `›` arrow icon (right).
+  - Status row:
+    - No active shift: status dot `●` in `text-gray-300`, label `"Sin fichar"` in `text-gray-400`.
+    - Active shift: status dot `●` in `text-accom-teal animate-pulse`, label `"Fichado"` in `text-accom-teal font-semibold`.
+  - Action button:
+    - Clock-in state: `"Entrada"` — `bg-accom-teal text-white rounded-lg px-5 py-2.5 font-medium hover:bg-teal-600`.
+    - Clock-out state: `"Salida"` (with `■` prefix icon) — `bg-accom-pink text-white rounded-lg px-5 py-2.5 font-medium hover:bg-pink-700`.
+  - The circular arc timer and elapsed-time counter are **explicitly out of scope for US-001** and will be implemented in US-002.
+
+### Dashboard Layout
+
+- **AC-23**: The dashboard content area follows this explicit layout structure:
+  ```
+  ┌──────────────────────────────────────────────────────────┐
+  │  NAVBAR: [Accom Logo SVG]      [Employee Name] [Cerrar]  │
+  ├──────────────────────────────────────────────────────────┤
+  │  CONTENT (max-w-5xl mx-auto px-6 py-8)                   │
+  │                                                           │
+  │  [●] ¡Buenos tardes, [Initials Avatar] [Name]!           │
+  │                                                           │
+  │  ┌───────────────────────────────┐                       │
+  │  │  Fichaje widget card (AC-22) │                       │
+  │  └───────────────────────────────┘                       │
+  │                                                           │
+  │  Registros del mes actual                                 │
+  │  ┌──────────────────────────────────────────────────┐   │
+  │  │  Fecha │ Entrada │ Salida │ Total horas           │   │
+  │  └──────────────────────────────────────────────────┘   │
+  └──────────────────────────────────────────────────────────┘
+  ```
+  Page background: `bg-gray-50`. Table headers in `text-gray-500 text-sm uppercase`.
+
+### Login Page
+
+- **AC-24**: The login page (`/login`) is styled as follows:
+  - Accom logo SVG centred at the top of the card.
+  - Card: `max-w-md mx-auto mt-24 bg-white rounded-xl shadow-md p-8`.
+  - `"Iniciar sesión"` submit button: `bg-accom-teal text-white w-full rounded-lg py-2.5 font-medium`.
+  - Validation and inactive-user error messages: `text-accom-pink text-sm`.
+
 ---
 
 ## Technical Considerations
+
+### Design System (Accom Corporate Branding)
+
+| Token | Hex | Usage |
+|---|---|---|
+| `accom-teal` | `#2BBFB3` | Primary buttons, active states, navbar accent, avatar background |
+| `accom-teal-light` | `#E8F9F8` | Card backgrounds, hover fills, tag backgrounds |
+| `accom-pink` | `#E8195A` | Clock-out button, error messages, destructive actions |
+| `gray-50` | `#F9FAFB` | Page background |
+| `gray-900` | `#111827` | Primary body text |
+
+Register as custom Tailwind tokens in `tailwind.config.js`:
+```js
+theme: {
+  extend: {
+    colors: {
+      accom: {
+        teal:       '#2BBFB3',
+        'teal-light': '#E8F9F8',
+        pink:       '#E8195A',
+      },
+    },
+  },
+},
+```
+
+UI-facing text (labels, buttons, messages) is in **Spanish**. All code identifiers remain in **English**.
 
 ### Stack
 
@@ -157,6 +242,9 @@ ADMIN_NAME=Administrador
 - `.env.example` updated with all new environment variables.
 - No credentials hardcoded anywhere in source code.
 - All code, comments, test names, and DB identifiers in English.
+- After implementing Blade components, run `npm run dev` and visually verify the login page and dashboard render correctly before marking UI specs complete.
+- No custom CSS files — Tailwind utility classes only (exception: SVG arc animation in US-002).
+- No external image assets for the logo — use an inline SVG built from brand hex values.
 
 ---
 
@@ -189,6 +277,8 @@ ADMIN_NAME=Administrador
 
 ## Implementation Checklist
 
+- [ ] **Spec 0**: Accom brand Tailwind config — register `accom-teal`, `accom-teal-light`,
+  `accom-pink` tokens in `tailwind.config.js`; confirm `npm run dev` compiles without errors.
 - [ ] **Spec 1**: Laravel 11 bootstrap — fresh install, Filament 3, Laravel Breeze
   (Blade stack, unused routes disabled), `.env.example` with admin vars.
 - [ ] **Spec 2**: Database migrations — `add_role_and_is_active_to_users_table` +
@@ -207,4 +297,7 @@ ADMIN_NAME=Administrador
   records table, conditional clock-in/out button placeholder.
 - [ ] **Spec 10**: `ClockRecordPolicy` — ensures employees can only view their own records.
 - [ ] **Spec 11**: Feature tests — all 11 tests green.
+- [ ] **Spec 12**: Blade UI components — `<x-navbar>` (logo + logout), `<x-clock-widget>`
+  (card with status dot and action button), `TimeGreetingHelper`, login page layout with
+  Accom branding. Visual check: `npm run dev` confirms login and dashboard render correctly.
 - [ ] Functional Tests (Playwright)
