@@ -81,3 +81,15 @@ Final state: 24 ACs, 11 tests, 13 specs + Playwright.
 ## 2026-05-12 15:51 — /develop-frontend
 **Args:**
 > openspec/specs/20260512-us001-spec0-tailwind-brand-config.md
+
+## 2026-05-12 16:31 — /complete-spec
+**Args:**
+> Spec0
+
+## 2026-05-12 16:33 — /complete-spec
+**Args:**
+> spec 1
+
+## 2026-05-12 16:36 — /develop-backend
+**Args:**
+> openspec/specs/20260512-us001-spec2-database-migrations.md
