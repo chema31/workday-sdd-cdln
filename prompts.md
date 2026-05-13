@@ -97,3 +97,10 @@ Final state: 24 ACs, 11 tests, 13 specs + Playwright.
 ## 2026-05-12 17:23 — /complete-spec
 **Args:**
 > spec2
+
+## 2026-05-13 18:03 — /develop-backend
+**Args:** none
+
+## 2026-05-13 18:13 — /complete-spec
+**Args:**
+> openspec/specs/20260512-us001-spec3-user-role-enum-and-model.md

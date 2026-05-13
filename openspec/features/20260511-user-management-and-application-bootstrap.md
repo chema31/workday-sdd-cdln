@@ -283,7 +283,7 @@ ADMIN_NAME=Administrador
   (Blade stack, unused routes disabled), `.env.example` with admin vars.
 - [x] **Spec 2**: Database migrations — `add_role_and_is_active_to_users_table` +
   `create_clock_records_table`.
-- [ ] **Spec 3**: `UserRole` enum + `User` model update — casts, query scopes,
+- [x] **Spec 3**: `UserRole` enum + `User` model update — casts, query scopes,
   `canAccessPanel()`, factory states (`admin`, `employee`, `inactive`).
 - [ ] **Spec 4**: `ClockRecord` model + factory — relationships, fillable, casts.
 - [ ] **Spec 5**: `AdminSeeder` — idempotent seeder reading from `.env`.
