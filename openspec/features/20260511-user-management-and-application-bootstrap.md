@@ -285,7 +285,7 @@ ADMIN_NAME=Administrador
   `create_clock_records_table`.
 - [x] **Spec 3**: `UserRole` enum + `User` model update — casts, query scopes,
   `canAccessPanel()`, factory states (`admin`, `employee`, `inactive`).
-- [ ] **Spec 4**: `ClockRecord` model + factory — relationships, fillable, casts.
+- [x] ~~**Spec 4**: `ClockRecord` model + factory — relationships, fillable, casts.~~
 - [ ] **Spec 5**: `AdminSeeder` — idempotent seeder reading from `.env`.
 - [ ] **Spec 6**: `UserService` — `createEmployee()`, `updateEmployee()` (optional
   password change), `isProtectedAdmin()` guard method.
