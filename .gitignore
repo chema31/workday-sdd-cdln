@@ -20,4 +20,14 @@ yarn-error.log
 /.nova
 /.vscode
 .phpunit.result.cache
-accom-spec-kit
+# dln-spec-kit — managed by install.sh
+#dln-spec-kit/
+#CLAUDE.md
+#AGENTS.md
+#GEMINI.md
+#codex.md
+#.claude
+#.cursor
+#.codex
+#rules
+#.github/copilot-instructions.md

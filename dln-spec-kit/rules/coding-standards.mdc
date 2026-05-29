@@ -1,0 +1,119 @@
+---
+description: Accom general coding standards applicable to all languages and projects. Covers pre-implementation review, SOLID, naming conventions, data types, external communication principles, QA process, production deployment rules, and legacy code handling.
+alwaysApply: true
+---
+
+# Coding Standards
+
+> These rules apply to **all languages and projects**. Technology-specific extensions live in the corresponding standards file — see Section 8.
+
+---
+
+## 1. Pre-Implementation Review (AI Responsibility)
+
+This review is executed exclusively during the `/enrich-us` command, as part of the User Story enrichment process. The User Story must not be confirmed until all items below are resolved by the developer.
+
+Before any spec is approved, the AI agent must review the current application state and surface all findings:
+
+- **Conflict detection**: Identify existing code, DB structures, or business logic that may conflict with or be affected by the requested development.
+- **Dependency mapping**: Detect which modules, services, models, or APIs are impacted — including non-obvious indirect dependencies.
+- **Ambiguity flagging**: Surface any requirement that is unclear, incomplete, or has multiple valid interpretations. Never assume — ask.
+- **Risk identification**: Flag anything that could introduce regressions, break existing behaviour, or requires cross-team coordination.
+- **Open questions**: Compile a numbered list of all doubts found. Present it to the developer and wait for explicit resolution before approving the User Story.
+
+> **Rule**: `/enrich-us` must not produce a confirmed User Story while open questions remain. If new questions arise during `develop-spec`, escalate them to the developer and pause implementation until resolved.
+
+---
+
+## 2. SOLID Principles and Design Patterns
+
+Apply SOLID in all object-oriented code:
+
+- **S — Single Responsibility**: each class/function has one reason to change.
+- **O — Open/Closed**: open for extension, closed for modification.
+- **L — Liskov Substitution**: subtypes must be substitutable for their base types.
+- **I — Interface Segregation**: clients must not depend on interfaces they don't use.
+- **D — Dependency Inversion**: depend on abstractions, not concretions.
+
+Know and apply Design Patterns when appropriate (Singleton, Factory, Facade, Dependency Injection, Observer, etc.). Reference: [refactoring.guru](https://refactoring.guru/es). Knowing when a pattern applies is enough — you do not need to memorise every implementation.
+
+---
+
+## 3. Naming Conventions
+
+These rules are the **single source of truth** for naming across all languages. Technology-specific naming extensions (e.g. Laravel migration names, Python module names) are in the respective standards file and must not contradict these rules.
+
+| Context | Convention | Example |
+|---|---|---|
+| Class names | `UpperCamelCase` | `PositionService`, `CandidateController` |
+| Source code variables and functions | `camelCase` | `$totalAmount`, `calculateRate()` |
+| DB columns, form fields, JSON attributes | `snake_case` | `phone`, `created_at`, `owner_id` |
+| URLs, configuration identifier keys | `kebab-case` | `endesa-pt`, `/api/v1/positions` |
+
+**Additional rules:**
+
+- All names must be **descriptive** and written in **English** — no abbreviations that reduce clarity, no Spanish or accented characters.
+- **Prefer concise over verbose**: use `phone` not `phone_number`, `email` not `personal_email`. Add a disambiguating prefix only when genuinely necessary (e.g. `owner_phone` vs `insurer_phone`).
+- Configuration identifier keys must be **alphanumeric, lowercase, with `-` as the only permitted non-alphanumeric character** (e.g. `endesa-pt`, `abla-api`).
+
+---
+
+## 4. Data Types
+
+Data must be stored and handled in its correct type regardless of what the language or database would permit. Strict type discipline prevents incidents in integrations with external systems (e.g. Data team tools).
+
+| Type | Storage rule | Display rule (Spanish UI) |
+|---|---|---|
+| **Integer** | `INTEGER` or `UNSIGNED INTEGER` | As-is |
+| **Real number** | `FLOAT` or `DECIMAL` (3 decimal places when precision matters) | `,` as decimal separator, `.` as thousands separator, rounded to 2 decimal places |
+| **Date / datetime** | `YYYY-MM-DD hh:mm:ss` (omit time when not needed) | `DD/MM/YYYY hh:mm:ss` (omit time when not needed) |
+
+**Strict rules:**
+
+- Integers and real numbers must **never** be stored as strings.
+- Use `.` (dot) as decimal separator in code and database — never `,`.
+- Never store a date as a plain string in a non-date column.
+
+---
+
+## 5. External Communication Principle
+
+All communications with third-party services (CRMs, payment gateways, SMS providers, webhooks, external APIs) must be **asynchronous and queue-managed**. Synchronous blocking calls to external services from within an HTTP request cycle are forbidden.
+
+This rule exists to prevent third-party outages from paralysing internal operations. When an external service is down, messages remain queued and are retried once it recovers.
+
+> For Laravel implementation (Jobs, queue driver, Supervisor, retry commands): see `rules/laravel-standards.mdc`.
+> For Python: see `rules/python-standards.mdc`.
+
+---
+
+## 6. QA and Production Deployment
+
+- **Production deployments** are permitted only on **Mondays and Wednesdays**. Exceptionally on Tuesdays or Thursdays with explicit justification. **Strictly forbidden on Fridays and holiday eves.**
+- **QA sessions**: every **Tuesday and Friday**, every team member reserves a **2-hour block** for QA.
+  - Primary goal: cross-test what a colleague intends to release to production.
+  - If no pending release: use the time to improve `README.md` documentation, document team processes, or define test plans.
+
+---
+
+## 7. Legacy Code Handling
+
+- **Never adapt new code to legacy patterns.** Legacy patterns are historical debt, not a current standard.
+- When encountering legacy code that violates current standards: flag it explicitly, propose a progressive update plan, and implement the new code following current standards regardless.
+- **Finding a bug and leaving it in place is the worst possible outcome.** If a bug is found, fix it immediately or formally report it for prioritisation.
+
+---
+
+## 8. Technology-Specific Standards
+
+This file defines general rules only. For technology-specific implementation standards, always read the corresponding file before starting work:
+
+| Technology | Standards file |
+|---|---|
+| Laravel (API, Admin Panel) | `rules/laravel-standards.mdc` |
+| Python (standalone processes) | `rules/python-standards.mdc` |
+| CodeIgniter 4 (commercial websites) | `rules/ci4-standards.mdc` |
+| Frontend (React / Vue) | `rules/frontend-standards.mdc` |
+| Functional tests (Playwright) | `rules/playwright-standards.mdc` |
+| Git workflow | `rules/git-standards.mdc` |
+| Documentation | `rules/documentation-standards.mdc` |

@@ -1,1 +1,1 @@
-accom-spec-kit/AGENTS.md
+dln-spec-kit/AGENTS.md

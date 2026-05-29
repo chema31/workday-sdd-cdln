@@ -1,12 +1,22 @@
-# fichaccom — Control de Presencia para We-Accom
+# workday-sdd-cdln — Control de Presencia
 
 Aplicación web monolítica para la gestión del fichaje de empleados: registro de entradas y salidas, administración del personal y consulta del historial de asistencia mensual.
 
 ---
 
+## Framework de desarrollo: dln-spec-kit
+
+Este proyecto está desarrollado siguiendo el framework propio de **Spec-Driven Development (SDD)** [`dln-spec-kit`](dln-spec-kit/README.md).
+
+El framework define un ciclo de vida completo de desarrollo asistido por IA: desde la creación de historias de usuario hasta el cierre y archivado de specs, garantizando que todo el código esté cubierto por tests y alineado con los estándares del proyecto.
+
+**Para entender cómo se ha construido esta aplicación, continúa la lectura en [`dln-spec-kit/README.md`](dln-spec-kit/README.md).**
+
+---
+
 ## Descripción funcional
 
-**fichaccom** resuelve la necesidad de We-Accom de disponer de un sistema centralizado de control horario. Los responsables de administración gestionan el alta, modificación y baja de empleados desde un panel de administración privado. Cada empleado accede a un portal propio donde consulta sus registros de asistencia del mes en curso y ficha su entrada o salida de turno. El sistema impide el acceso cruzado entre empleados: cada usuario ve únicamente sus propios datos.
+**workday-sdd-cdln** es un sistema centralizado de control horario desarrollado por Chema de la Nieta. Los responsables de administración gestionan el alta, modificación y baja de empleados desde un panel de administración privado. Cada empleado accede a un portal propio donde consulta sus registros de asistencia del mes en curso y ficha su entrada o salida de turno. El sistema impide el acceso cruzado entre empleados: cada usuario ve únicamente sus propios datos.
 
 La aplicación expone dos contextos de acceso diferenciados que comparten la misma base de datos de usuarios:
 
@@ -48,7 +58,7 @@ Las cuentas inactivas quedan bloqueadas en el login con el mensaje `"Your accoun
 - Botón de fichaje condicional en tarjeta visual inspirada en el widget de Factorial *(placeholder — sin lógica de escritura)*.
 - Política de acceso `ClockRecordPolicy` que impide la consulta de registros ajenos.
 - Semilla de cuenta administrador idempotente (`firstOrCreate`) desde variables de entorno.
-- Identidad visual corporativa de Accom (teal `#2BBFB3`, pink `#E8195A`) registrada como tokens Tailwind.
+- Identidad visual propia (teal `#2BBFB3`, pink `#E8195A`) registrada como tokens Tailwind.
 
 ## Funcionalidades planificadas (US-002 en adelante)
 
@@ -137,7 +147,7 @@ Extiende la migración por defecto de Laravel con dos columnas adicionales:
 
 ## Sistema de diseño
 
-Tokens de marca Accom registrados en `tailwind.config.js`:
+Tokens de marca registrados en `tailwind.config.js`:
 
 | Token | Hex | Uso |
 |---|---|---|
@@ -145,7 +155,7 @@ Tokens de marca Accom registrados en `tailwind.config.js`:
 | `accom-teal-light` | `#E8F9F8` | Fondos de tarjeta, hover, etiquetas |
 | `accom-pink` | `#E8195A` | Botón de salida, mensajes de error, acciones destructivas |
 
-El logo de Accom se renderiza como SVG inline con los valores hexadecimales de marca. No se usan archivos de imagen externos ni CSS personalizado: solo clases de utilidad de Tailwind.
+El logo se renderiza como SVG inline con los valores hexadecimales de marca. No se usan archivos de imagen externos ni CSS personalizado: solo clases de utilidad de Tailwind.
 
 ---
 
@@ -167,3 +177,11 @@ El logo de Accom se renderiza como SVG inline con los valores hexadecimales de m
 | Spec 11 | Suite de 11 feature tests en verde | ⏳ Pendiente |
 | Spec 12 | Componentes Blade (`<x-navbar>`, `<x-clock-widget>`) + `TimeGreetingHelper` | ⏳ Pendiente |
 | Playwright | Tests funcionales de la historia de usuario | ⏳ Pendiente |
+
+---
+
+## Nota sobre la inclusión de dln-spec-kit en el repositorio
+
+En una instalación habitual de `dln-spec-kit`, tanto el directorio del framework como los symlinks generados por su instalador se añadirían a `.gitignore` para mantener el repositorio de la aplicación limpio e independiente del kit.
+
+En este repositorio se han **incluido expresamente** para que el evaluador pueda revisar el framework, su estructura, las reglas de codificación y los artefactos de especificación (`openspec/`) como parte de la entrega del trabajo práctico.

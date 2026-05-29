@@ -1,1 +1,1 @@
-accom-spec-kit/CLAUDE.md
+dln-spec-kit/CLAUDE.md

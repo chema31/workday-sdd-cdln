@@ -1,0 +1,30 @@
+schema: spec-driven
+
+context: |
+  Tech stack: TypeScript, Node.js, Express, Prisma, Domain-Driven Design (DDD)
+  Architecture: Clean Architecture with Domain, Application, and Presentation layers
+  We use conventional commits
+  Domain: LTI (Leadership. Technology. Impact) ATS platform
+  All code, comments, documentation, and technical artifacts must be in English
+
+  Project specs (single source of truth): All artifact creation and implementation MUST follow the project's technical context in dln-specs/. Read and apply these when creating or implementing:
+  - rules/base-standards.mdc — core principles, TDD, language standards, links to backend/frontend/docs standards
+  - rules/coding-standards.mdc — general rules for all languages (naming, data types, SOLID, QA)
+  - rules/laravel-standards.mdc — Laravel API and Admin Panel (backend changes)
+  - rules/python-standards.mdc — Python standalone processes (backend changes)
+  - rules/ci4-standards.mdc — CodeIgniter 4 commercial websites (backend changes)
+  - rules/frontend-standards.mdc — React, UI/UX (frontend changes)
+  - rules/api-spec.yml — API contracts and endpoint definitions
+  - rules/data-model.md — domain and data model
+  - rules/documentation-standards.mdc — docs structure and maintenance
+  For implementation: adopt the relevant agent from dln-specs/.agents/ (e.g. backend-developer.md for backend, frontend-developer.md for frontend). Use dln-specs/.commands/ (e.g. develop-backend.md, develop-frontend.md) for workflow guidance when applicable.
+
+# Per-artifact rules (optional)
+# Add custom rules for specific artifacts.
+rules:
+  # Global: apply dln-specs when creating any artifact
+  _global:
+    - Before creating any artifact, read and apply rules/base-standards.mdc
+    - For backend-related artifacts, read rules/coding-standards.mdc plus the technology-specific file (rules/laravel-standards.mdc, rules/python-standards.mdc, or rules/ci4-standards.mdc) and adopt guidelines from the matching agent in dln-specs/.agents/
+    - For frontend-related artifacts, read rules/frontend-standards.mdc and adopt guidelines from dln-specs/.agents/frontend-developer.md
+    - Use rules/api-spec.yml and rules/data-model.md for API and data consistency in specs and tasks
