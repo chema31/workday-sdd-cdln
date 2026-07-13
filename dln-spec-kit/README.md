@@ -49,6 +49,8 @@ Our workflow consists of 6 strict, command-driven steps. We move from a raw idea
 1️⃣ `/create-us` ➔ 2️⃣ `/enrich-us` ➔ 3️⃣ `/generate-specs-from-us` ➔ 4️⃣ `/develop-spec` ➔ 5️⃣ `/complete-spec` ➔ 6️⃣ `/complete-us`
 
 > **Optional pre-step**: if you have a raw, non-technical idea or a client request written in plain language, run `/meta-prompt` first to transform it into a structured technical description, then pass the output to `/create-us`.
+>
+> **Optional planning step**: if you are starting a larger effort made of several user stories, run `/create-development-plan` first to capture the overall goal, scope, and an ordered list of pending stories in `openspec/development-plan.md`. `/enrich-us` then picks stories from that plan and assigns their IDs, and `/complete-us` marks them done as they are archived.
 
 ---
 
@@ -103,6 +105,10 @@ Our workflow consists of 6 strict, command-driven steps. We move from a raw idea
 ## 🛠️ 3. Utility Commands
 
 These commands are available at any point in the workflow — they are not tied to a specific lifecycle step.
+
+### `/create-development-plan`
+**When to use**: You are kicking off a larger effort composed of several user stories and want to agree on the goal, scope, and delivery order before writing any single story.
+**What it does**: Acting as the product-strategy-analyst, leads a structured conversation **in Spanish** to capture the goal, scope (included/excluded), and functional areas, then saves an ordered list of pending stories to `openspec/development-plan.md` and links it from the host `../README.md`. Stories are stored as plain `- [ ] kebab-case-description` entries with no ID yet — `/enrich-us` assigns each ID and date, and `/complete-us` marks them done. It never invokes `/enrich-us` automatically.
 
 ### `/meta-prompt`
 **When to use**: You have a raw, non-technical idea or a client request in plain language and want to structure it before starting a User Story.

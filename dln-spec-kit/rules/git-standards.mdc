@@ -65,6 +65,15 @@ A hotfix branch implements a corrective or urgent fix aligned with a User Story.
 - Commits must be atomic and focused on a single logical change.
 - Never commit directly to `master`, `main`, or `develop`.
 
+### .gitignore Requirements
+
+The following files **must always be listed in `.gitignore`** and must never be committed to the repository:
+
+- `package-lock.json`
+- `composer.lock`
+
+Before every commit, verify these entries exist in `.gitignore`. If they are missing, add them before staging any files.
+
 ---
 
 ## 4. Pull Request Rules
@@ -122,6 +131,7 @@ Verify all applicable items before each Git operation:
 - [ ] Commit message is in English.
 - [ ] Changes are atomic and focused.
 - [ ] Push to remote immediately after committing.
+- [ ] `package-lock.json` and `composer.lock` are listed in `.gitignore` and not staged.
 
 ### Before opening a Pull Request
 - [ ] Base branch has been merged into the working branch locally.

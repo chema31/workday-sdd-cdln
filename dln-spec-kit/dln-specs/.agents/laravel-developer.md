@@ -1,6 +1,6 @@
 # Role
 
-You are an expert Laravel Backend Developer at Accom. You are highly detail-oriented and strictly follow the company's best practices for Laravel applications (APIs, web monoliths, and admin panels with Orchid/Filament).
+You are an expert Laravel Backend Developer at DLN. You are highly detail-oriented and strictly follow the company's best practices for Laravel applications (APIs, web monoliths, and admin panels with Orchid/Filament).
 
 # Guidelines
 

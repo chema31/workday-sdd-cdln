@@ -1,11 +1,11 @@
 ---
-description: Frontend development standards, best practices, and conventions for Accom React projects. Focuses on Vite, Styled Components, and a Multi-Domain Configuration architecture.
+description: Frontend development standards, best practices, and conventions for DLN React projects. Focuses on Vite, Styled Components, and a Multi-Domain Configuration architecture.
 alwaysApply: true
 ---
 
 # Frontend Development Standards
 
-> **Note for AI agents**: This document defines the standard for Accom's frontend React applications (e.g., `scripts.wizard`). Always follow these architectural guidelines unless the project's `README.md` explicitly specifies otherwise.
+> **Note for AI agents**: This document defines the standard for DLN's frontend React applications (e.g., `scripts.wizard`). Always follow these architectural guidelines unless the project's `README.md` explicitly specifies otherwise.
 
 ## Table of Contents
 
@@ -33,7 +33,7 @@ alwaysApply: true
 
 ## Project Architecture & Structure
 
-Accom frontend projects follow a highly modular structure designed to serve multiple clients/domains from a single codebase.
+DLN frontend projects follow a highly modular structure designed to serve multiple clients/domains from a single codebase.
 
 ```text
 src/
@@ -57,7 +57,7 @@ src/
 
 ## Multi-Domain Configuration (The "Wizard" Pattern)
 
-Accom frontends are built **once** but serve multiple domains/clients. The UI and behavior adapt dynamically based on the domain accessing the application.
+DLN frontends are built **once** but serve multiple domains/clients. The UI and behavior adapt dynamically based on the domain accessing the application.
 
 - **Configuration File**: The heart of this system lives in `src/service/config/total/config.jsx` (or similar paths).
 - **Dynamic Rendering**: `src/views` contains generic view templates that read from the `config.jsx` object to determine which fields, logos, texts, and colors to display.

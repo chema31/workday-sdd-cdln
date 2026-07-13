@@ -9,6 +9,12 @@ When all specs for a User Story are completed:
     *   **CRITICAL**: You MUST run and verify the **Playwright functional tests** for this User Story. It is strictly forbidden to validate or close a User Story if the E2E Playwright tests have not passed correctly.
 2.  **Archive User Story**:
     *   Once E2E tests pass, move the User Story file from `openspec/features/` or `openspec/hotfixes/` to `openspec/archive/features/` or `openspec/archive/hotfixes/`.
+    *   **Update Development Plan** *(only if `openspec/development-plan.md` exists)*:
+        *   Find the entry in `## User Stories` that links to this User Story file.
+        *   Mark the checkbox as done and apply strikethrough to the entire line:
+            `- [x] ~~[filename.md](archive/features/filename.md)~~`
+        *   Update the path in the link to reflect the new archive location.
+        *   Do not modify any other line in the plan.
 3.  **Clean Repository**:
     *   **DELETE** all the archived spec files in `openspec/archive/specs/` that belong to this User Story. We do this to ensure the repository remains clean and lightweight over time.
 4.  **Update Documentation** *(mandatory — same weight as E2E tests)*:

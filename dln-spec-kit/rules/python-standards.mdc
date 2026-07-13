@@ -1,5 +1,5 @@
 ---
-description: Python-specific standards for Accom standalone data process projects. Covers architecture, type hints, error handling, testing (TDD), and deployment. General naming and data type rules are in coding-standards.mdc. External communication must use queues as defined in coding-standards.mdc Section 5.
+description: Python-specific standards for DLN standalone data process projects. Covers architecture, type hints, error handling, testing (TDD), and deployment. General naming and data type rules are in coding-standards.mdc. External communication must use queues as defined in coding-standards.mdc Section 5.
 alwaysApply: true
 ---
 

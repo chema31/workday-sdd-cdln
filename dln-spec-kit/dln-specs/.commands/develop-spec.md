@@ -52,7 +52,9 @@ Parse the spec's `## Metadata` section and read the `**Type**:` field. Map it to
 
 ### 7. Completion
 
-- Once implemented and verified, run the **`complete-spec`** command for this spec.
+- **Stop here.** Present a summary of what was implemented and all tests that were run.
+- Remind the user to review the code and, when satisfied, run `/complete-spec` manually to mark the spec as done.
+- Do NOT invoke or execute `complete-spec` automatically.
 
 ### 8. Git Operations
 

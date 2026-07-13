@@ -1,5 +1,5 @@
 ---
-description: CodeIgniter 4 standards for Accom commercial website projects. Covers simple MVC architecture, routing, views, and minimal testing. General naming and data type rules are in coding-standards.mdc.
+description: CodeIgniter 4 standards for DLN commercial website projects. Covers simple MVC architecture, routing, views, and minimal testing. General naming and data type rules are in coding-standards.mdc.
 alwaysApply: true
 ---
 

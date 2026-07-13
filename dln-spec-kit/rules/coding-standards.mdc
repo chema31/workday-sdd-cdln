@@ -1,5 +1,5 @@
 ---
-description: Accom general coding standards applicable to all languages and projects. Covers pre-implementation review, SOLID, naming conventions, data types, external communication principles, QA process, production deployment rules, and legacy code handling.
+description: DLN general coding standards applicable to all languages and projects. Covers pre-implementation review, SOLID, naming conventions, data types, external communication principles, QA process, production deployment rules, and legacy code handling.
 alwaysApply: true
 ---
 

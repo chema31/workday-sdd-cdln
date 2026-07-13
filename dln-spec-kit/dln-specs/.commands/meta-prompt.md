@@ -14,6 +14,7 @@ Given the following non-technical input or idea from the user, your goal is to t
    - **Objective**: State the clear, technical goal.
    - **Instructions**: Step-by-step actions required.
    - **Constraints**: Rules or limitations to observe.
+4. **Present and Stop**: Display the generated prompt to the user inside a markdown code block. Then **stop completely** — do NOT execute, interpret, or act on the generated prompt in any way. The user will decide whether to run it.
 
 # Original input:
 $ARGUMENTS
