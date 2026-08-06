@@ -1,0 +1,393 @@
+---
+description: Laravel-specific standards for DLN projects. Covers architecture (MVC + Service Layer), PSR standards, Eloquent, APIs, Admin Panels, Jobs and Queues with Supervisor, authentication, testing, database, security, and CI/CD. General naming and data type rules are in coding-standards.mdc.
+alwaysApply: true
+---
+
+# Laravel Standards
+
+> **Note for AI agents**: Read the project's `README.md` first to confirm this is a Laravel project and identify any project-specific overrides. General naming and data type rules are in `rules/coding-standards.mdc` — this file only extends them with Laravel-specific conventions.
+
+---
+
+## Table of Contents
+
+- [Application Types](#application-types)
+- [PHP Standards Recommendations (PSR)](#php-standards-recommendations-psr)
+- [Architecture: MVC + Service Layer](#architecture-mvc--service-layer)
+- [Eloquent ORM](#eloquent-orm)
+- [Laravel APIs](#laravel-apis)
+- [Laravel Admin Panels](#laravel-admin-panels)
+- [Jobs and Queues](#jobs-and-queues)
+- [Authentication](#authentication)
+- [Laravel Testing](#laravel-testing)
+- [Database Standards](#database-standards)
+- [API Design Standards](#api-design-standards)
+- [Security Best Practices](#security-best-practices)
+- [Development Workflow](#development-workflow)
+
+---
+
+## Application Types
+
+DLN develops two types of Laravel applications. Every project README **must** state which type it is.
+
+| Type | Framework | Purpose | Example |
+|---|---|---|---|
+| **Laravel API** | Laravel 11/12 + Passport | REST APIs for mobile/frontend apps | `git@bitbucket.org:dln/abla.git` |
+| **Laravel Admin Panel** | Laravel 11/12 + Filament (new) / Orchid (legacy) | Internal management interfaces | `git@bitbucket.org:dln/ama.git` |
+
+---
+
+## PHP Standards Recommendations (PSR)
+
+All PHP code must comply with the following PSRs ([php-fig.org/psr](https://www.php-fig.org/psr/)):
+
+- **PSR-1**: Basic coding standard — file encoding, class naming, method naming.
+- **PSR-4**: Autoloading standard — managed by Composer. Always use Composer's autoloader. Never manually `require` class files.
+- **PSR-12**: Extended coding style — indentation (4 spaces), brace placement, spacing, line length.
+
+---
+
+## Architecture: MVC + Service Layer
+
+Laravel projects follow **MVC with a vertical Service Layer**:
+
+```
+app/
+├── Http/
+│   ├── Controllers/         # Thin controllers — no business logic here
+│   ├── Requests/            # Form Request validation classes
+│   └── Resources/           # API Resources for response transformation
+├── Models/                  # Eloquent models (relationships, scopes, casts)
+├── Services/                # Business logic layer (vertically organized)
+│   ├── Auth/
+│   ├── Billing/
+│   ├── Notifications/
+│   └── [Domain]/            # One subdirectory per domain area
+├── Jobs/                    # Queue jobs for async/parallel processes
+├── Policies/                # Authorization policies
+├── Providers/               # Service providers
+├── Exceptions/              # Custom exception classes
+└── Enums/                   # PHP 8.1+ enums for domain constants
+```
+
+### Controllers: Keep Them Thin
+
+Controllers must only:
+1. Parse and validate the HTTP request (via Form Requests).
+2. Call one or more Service methods.
+3. Return an HTTP response.
+
+```php
+// ✅ Correct: thin controller
+class PositionController extends Controller
+{
+    public function __construct(private readonly PositionService $positionService) {}
+
+    public function store(StorePositionRequest $request): JsonResponse
+    {
+        $position = $this->positionService->create($request->validated());
+        return response()->json(new PositionResource($position), 201);
+    }
+}
+
+// ❌ Wrong: business logic in controller
+class PositionController extends Controller
+{
+    public function store(Request $request): JsonResponse
+    {
+        $data = $request->all();
+        if (!$data['title']) { return response()->json(['error' => 'Title required'], 422); }
+        $position = Position::create($data);
+        return response()->json($position);
+    }
+}
+```
+
+### Services: Business Logic Layer
+
+- One service class per domain subdirectory.
+- Services are injected via the constructor (dependency injection).
+- Services call Eloquent models directly (no Repository layer needed).
+- Services must not know about HTTP (no `Request`, no `Response`).
+
+```php
+// app/Services/Position/PositionService.php
+class PositionService
+{
+    public function create(array $data): Position
+    {
+        $position = Position::create($data);
+        // dispatch jobs, fire events, etc.
+        return $position;
+    }
+}
+```
+
+### Form Requests: Validation
+
+Always use Form Request classes for input validation. Never validate in controllers manually.
+
+```php
+class StorePositionRequest extends FormRequest
+{
+    public function rules(): array
+    {
+        return [
+            'title'       => ['required', 'string', 'max:255'],
+            'description' => ['required', 'string'],
+        ];
+    }
+}
+```
+
+---
+
+## Eloquent ORM
+
+- Use **Eloquent** as the ORM. No custom Repository layer.
+- Define **relationships** in models (`hasMany`, `belongsTo`, `morphTo`, etc.).
+- Use **query scopes** for reusable query logic.
+- Use **model casts** for type safety (`casts` array).
+- Use **API Resources** for response transformation — never return raw Eloquent models in API responses.
+- Avoid `Model::all()` on large tables. Always paginate or filter.
+
+```php
+class Position extends Model
+{
+    protected $fillable = ['title', 'description', 'status', 'company_id'];
+
+    protected $casts = [
+        'published_at' => 'datetime',
+        'status'       => PositionStatus::class,
+    ];
+
+    public function company(): BelongsTo
+    {
+        return $this->belongsTo(Company::class);
+    }
+
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('status', PositionStatus::Active);
+    }
+}
+```
+
+---
+
+## Laravel APIs
+
+- Use **Laravel Passport** for API authentication (OAuth 2.0).
+- All API routes are under `routes/api.php` and versioned: `/api/v1/...`.
+- Use **API Resources** for all responses.
+- Return consistent JSON response structure:
+
+```json
+// Success
+{ "data": { ... }, "message": "Resource created successfully" }
+
+// Success list
+{ "data": [...], "meta": { "total": 100, "per_page": 15, "current_page": 1 } }
+
+// Error
+{ "message": "Validation failed", "errors": { "field": ["Error description"] } }
+```
+
+- Use appropriate HTTP status codes (200, 201, 204, 400, 401, 403, 404, 422, 500).
+- Handle exceptions globally in `app/Exceptions/Handler.php`.
+
+---
+
+## Laravel Admin Panels
+
+- **New projects**: Use **Filament** (v3+).
+- **Legacy projects**: Use **Orchid** (maintain existing, do not migrate unless requested).
+- Admin panels live under `routes/web.php` with their own middleware group.
+- Admin authentication is separate from API authentication.
+
+---
+
+## Jobs and Queues
+
+Use Laravel Jobs for **all** external communications and any process matching these criteria:
+
+- Connects to a third-party service (CRM, SMS, payment gateway, webhook, external API).
+- May take > 2 seconds.
+- Needs retry logic.
+- Heavy data processing that must not block the HTTP response.
+
+**This is mandatory** — synchronous external calls from HTTP controllers are forbidden (see `rules/coding-standards.mdc` Section 5).
+
+### Configuration
+
+- **Queue driver**: `database` (`QUEUE_CONNECTION=database` in `.env`).
+- **Queue worker**: `php artisan queue:work --queue=<queue_name>`
+- **Retry failed items**: `php artisan queue:retry --queue=<queue_name>`
+
+### Supervisor
+
+Queue consumers must be kept alive permanently via **Supervisor**:
+
+- Config directory: `/etc/supervisor/conf.d/`
+- Create one independent config file per consumer or command to keep alive.
+- Contact the Systems team to register new consumers on the server.
+- If a third-party service goes down, messages remain queued and are retried automatically once it recovers.
+
+### Job implementation
+
+```php
+class SendWelcomeEmail implements ShouldQueue
+{
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+
+    public int $tries   = 3;
+    public int $timeout = 60;
+
+    public function __construct(private readonly User $user) {}
+
+    public function handle(MailService $mailService): void
+    {
+        $mailService->sendWelcome($this->user);
+    }
+
+    public function failed(Throwable $exception): void
+    {
+        Log::error('SendWelcomeEmail failed', [
+            'user_id' => $this->user->id,
+            'error'   => $exception->getMessage(),
+        ]);
+    }
+}
+
+// Dispatch from a service
+SendWelcomeEmail::dispatch($user);
+```
+
+- Always define `$tries` and `$timeout` on every Job.
+- Always implement `failed()` for proper error logging.
+
+---
+
+## Authentication
+
+- **APIs**: Use **Laravel Passport** (OAuth 2.0). Client credentials or password grant depending on use case.
+- **Admin Panels**: Use Laravel session-based auth or Filament's built-in auth.
+- Always protect routes with the appropriate middleware: `auth:api`, `auth:sanctum`, `auth`, etc.
+
+---
+
+## Laravel Testing
+
+- **Framework**: PHPUnit (`php artisan test`).
+- **Philosophy**: TDD — write failing test first, then implement.
+- **Minimum coverage**: All service methods and all API endpoints.
+- **Test structure**: Feature tests for HTTP endpoints, Unit tests for services and complex logic.
+- **Database**: Use `RefreshDatabase` trait. SQLite in-memory for speed, or the configured database with transactions.
+- **Factories**: Use Laravel Model Factories for all test data — never hardcode raw data.
+
+```
+tests/
+├── Feature/
+│   └── Api/
+│       └── PositionTest.php        # HTTP endpoint tests
+└── Unit/
+    └── Services/
+        └── PositionServiceTest.php # Business logic unit tests
+```
+
+**Test naming**: `test_[expected_behavior]_when_[condition]`
+
+**Always test:**
+1. Happy path (valid inputs, expected outputs).
+2. Validation errors (missing required fields, wrong types).
+3. Authorization (unauthenticated and unauthorized requests).
+4. Not found (404 scenarios).
+5. Business rule violations.
+
+---
+
+## Database Standards
+
+- **Primary DB**: MySQL via Eloquent.
+- All schema changes must go through **Laravel migrations**. Never edit deployed migrations — create new ones.
+- Migration names must be descriptive: `create_positions_table`, `add_status_to_positions_table`.
+- Use `SoftDeletes` for any entity that may need recovery.
+
+### Laravel-specific naming (extends `coding-standards.mdc` Section 3)
+
+- Table names: `snake_case` plural (auto-derived by Laravel from model name).
+- Primary key: `id` (unsigned bigint).
+- Timestamps: `created_at`, `updated_at` always included.
+- Foreign keys: `{model}_id` pattern (e.g. `company_id`).
+- Always define `$fillable` (preferred over `$guarded = []`).
+
+---
+
+## API Design Standards
+
+- **Versioning**: Prefix all API routes with `/api/v1/` (or current version).
+- **REST conventions**: Resource names use plural nouns, not verbs.
+- **Consistent responses**: Use Laravel API Resources for all responses.
+
+```
+GET    /api/v1/positions          # List (paginated)
+GET    /api/v1/positions/{id}     # Show
+POST   /api/v1/positions          # Create
+PUT    /api/v1/positions/{id}     # Full update
+PATCH  /api/v1/positions/{id}     # Partial update
+DELETE /api/v1/positions/{id}     # Delete
+```
+
+| HTTP Code | When to use |
+|---|---|
+| 200 | Success (GET, PUT, PATCH) |
+| 201 | Resource created (POST) |
+| 204 | Success, no content (DELETE) |
+| 400 | Bad request |
+| 401 | Unauthenticated |
+| 403 | Forbidden (authenticated but unauthorised) |
+| 404 | Resource not found |
+| 422 | Validation failed |
+| 500 | Server error |
+
+---
+
+## Security Best Practices
+
+- **Never commit `.env`**. Use `.env.example` with placeholders.
+- **Validate all inputs** via Form Requests.
+- **Protect routes** with appropriate middleware.
+- **CORS**: Configure explicitly in `config/cors.php`. Never use wildcard `*` in production.
+- **SQL Injection**: Always use Eloquent or query builder — never raw queries with interpolated user input.
+- **Mass Assignment**: Always define `$fillable`. Never use `$guarded = []` in production models.
+- **Rate Limiting**: Apply `throttle` middleware to public APIs.
+- **Environment Variables**: Validate required env vars at startup. Document all in `.env.example`.
+
+---
+
+## Development Workflow
+
+### Version and Requirements
+
+- **Laravel**: Latest stable version at project creation (currently 11 or 12).
+- **PHP**: Minimum **PHP 8.2**. Use modern PHP features (named arguments, readonly properties, enums, match expressions).
+- **Composer**: Always commit `composer.lock`.
+
+### Code Quality Checklist Before PR
+
+- [ ] `php artisan test` passes (all tests green).
+- [ ] No raw business logic in controllers.
+- [ ] All new endpoints covered by Feature tests.
+- [ ] All new service methods covered by Unit tests.
+- [ ] Migration created for any schema change.
+- [ ] `.env.example` updated if new env vars added.
+- [ ] No `dd()`, `var_dump()`, or debug code left.
+- [ ] Bitbucket Pipelines passes on push.
+
+### CI/CD: Bitbucket Pipelines
+
+- Pipelines run tests automatically on every push.
+- A failing pipeline blocks the PR merge.
+- Configuration lives in `bitbucket-pipelines.yml` at the project root.
+- Pipeline configuration is managed by the development lead (requires admin profile).

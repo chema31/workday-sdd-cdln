@@ -1,0 +1,135 @@
+---
+description: Python-specific standards for DLN standalone data process projects. Covers architecture, type hints, error handling, testing (TDD), and deployment. General naming and data type rules are in coding-standards.mdc. External communication must use queues as defined in coding-standards.mdc Section 5.
+alwaysApply: true
+---
+
+# Python Standards
+
+> **Note for AI agents**: Read the project's `README.md` first to confirm this is a Python project and identify any project-specific overrides. General naming and data type rules are in `rules/coding-standards.mdc` — this file only extends them with Python-specific conventions.
+
+---
+
+## Version and Requirements
+
+- **Python**: **3.12+**.
+- **Dependencies**: Managed with `pip` and a `requirements.txt` or `pyproject.toml`.
+- Python processes live in a `/python` subdirectory within the project, or as a standalone repository.
+
+---
+
+## Architecture
+
+Python processes are **standalone, autonomous scripts** designed for data-intensive work. They may be called from Laravel (e.g. via a queue Job) but must be able to run independently.
+
+- One main entry point (`main.py` or a CLI command).
+- Separate concerns into distinct functions/modules: data fetching, processing, output.
+- Keep each process focused — one responsibility per script.
+
+```python
+# main.py
+from services.data_fetcher import fetch_records
+from services.processor import process_records
+from services.exporter import export_results
+
+def main() -> None:
+    records = fetch_records()
+    processed = process_records(records)
+    export_results(processed)
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## Type Hints
+
+Always use type hints on all function signatures:
+
+```python
+def calculate_rate(price: float, vat: float) -> float:
+    return price * (1 + vat)
+```
+
+---
+
+## Error Handling
+
+Use Python's standard `logging` module. Never use `print()` for operational output.
+
+```python
+import logging
+
+logger = logging.getLogger(__name__)
+
+try:
+    result = process_data(records)
+except ValueError as e:
+    logger.error("Invalid data encountered: %s", e)
+    raise
+```
+
+---
+
+## External Communication
+
+All communications with third-party services must be asynchronous and queue-managed — see `rules/coding-standards.mdc` Section 5 for the principle. Python processes that need to communicate with externals must either:
+
+- Be called from a Laravel Job (which handles the queue), or
+- Implement their own retry/queue mechanism explicitly documented in the project README.
+
+---
+
+## Testing (TDD)
+
+- **Framework**: `unittest` (Python standard library).
+- **Philosophy**: TDD — write failing tests before implementing functions.
+- Test data-transformation functions and business logic in isolation.
+- Mock all external connections (DB, APIs, file system) in tests.
+
+```python
+import unittest
+from unittest.mock import patch
+from services.processor import process_records
+
+class TestProcessRecords(unittest.TestCase):
+
+    def test_returns_empty_list_when_no_records(self):
+        result = process_records([])
+        self.assertEqual(result, [])
+
+    def test_processes_valid_records_correctly(self):
+        records = [{"price": 100.0, "vat": 0.21}]
+        result = process_records(records)
+        self.assertEqual(result[0]["total"], 121.0)
+
+    @patch("services.processor.external_api_call")
+    def test_handles_api_failure_gracefully(self, mock_api):
+        mock_api.side_effect = ConnectionError("API unreachable")
+        with self.assertRaises(ConnectionError):
+            process_records([{"id": 1}])
+
+if __name__ == "__main__":
+    unittest.main()
+```
+
+Run tests: `python -m unittest discover -s tests`
+
+---
+
+## Deployment
+
+- Python processes are autonomous: run via cron, Docker, or called from Laravel Jobs.
+- Document the execution method clearly in the project `README.md`.
+- All configuration (DB credentials, API keys) via environment variables — never hardcoded.
+- `requirements.txt` must be updated whenever new packages are added.
+
+---
+
+## Code Quality Checklist Before PR
+
+- [ ] `python -m unittest discover -s tests` passes.
+- [ ] Type hints on all public functions.
+- [ ] No `print()` — use `logging` module.
+- [ ] `requirements.txt` updated if new packages added.
+- [ ] No credentials hardcoded — all config via environment variables.

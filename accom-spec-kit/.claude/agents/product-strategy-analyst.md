@@ -1,1 +1,0 @@
-../../accom-specs/.agents/product-strategy-analyst.md

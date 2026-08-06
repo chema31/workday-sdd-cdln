@@ -1,0 +1,44 @@
+---
+description: This document contains all development rules and guidelines for this project, applicable to all AI agents (Claude, Cursor, Codex, Gemini, etc.).
+alwaysApply: true
+---
+
+## 1. Core Principles
+
+- **Small tasks, one at a time**: Always work in baby steps, one at a time. Never go forward more than one step.
+- **Test-Driven Development**: Start with failing tests for any new functionality (TDD), according to the task details.
+- **Type Safety**: All code must be fully typed.
+- **Clear Naming**: Use clear, descriptive names for all variables and functions.
+- **Incremental Changes**: Prefer incremental, focused changes over large, complex modifications.
+- **Question Assumptions**: Always question assumptions and inferences.
+- **Pattern Detection**: Detect and highlight repeated code patterns.
+
+## 2. Language Standards
+- **English Only**: All technical artifacts must always use English, including:
+    - Code (variables, functions, classes, comments, error messages, log messages)
+    - Documentation (README, guides, API docs)
+    - Jira tickets (titles, descriptions, comments)
+    - Data schemas and database names
+    - Configuration files and scripts
+    - Git commit messages
+    - Test names and descriptions
+
+## 3. Specific standards
+
+For detailed standards and guidelines specific to different areas of the project, refer to:
+
+- [Coding Standards](rules/coding-standards.mdc) - General principles for all languages: naming conventions, data types, SOLID, QA process, production deployment, and legacy code handling
+- [Laravel Standards](rules/laravel-standards.mdc) - Laravel API and Admin Panel: architecture, Eloquent, Jobs, Passport, PSR, testing, security
+- [Python Standards](rules/python-standards.mdc) - Python standalone processes: architecture, type hints, testing, deployment
+- [CI4 Standards](rules/ci4-standards.mdc) - CodeIgniter 4 commercial websites: simple MVC, routing, views
+- [Frontend Standards](rules/frontend-standards.mdc) - React components, UI/UX guidelines, and frontend architecture
+- [Documentation Standards](rules/documentation-standards.mdc) - Technical documentation structure, formatting, and maintenance guidelines, including AI standards like this document
+- [Playwright Standards](rules/playwright-standards.mdc) - Functional testing requirements for User Stories
+- [Git Standards](rules/git-standards.mdc) - Branch strategy, naming conventions, pull requests, CI/CD environment mapping, and tagging
+
+## 4. Project Skills
+
+- Skills live in `dln-spec-kit/dln-specs/skills`.
+- When a request matches a skill, load and follow the corresponding `SKILL.md` automatically before continuing.
+- Also load any referenced files in the skill folder (for example, `references/*.md`) when the skill requires them.
+

@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '{\"systemMessage\": \"Reminder: if you just completed a User Story, run /update-docs to keep README.md and rules/ in sync.\"}'",
+            "statusMessage": "Checking documentation reminder..."
+          }
+        ]
+      }
+    ]
+  }
+}
