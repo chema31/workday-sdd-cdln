@@ -66,6 +66,12 @@ US-002 implementará la lógica completa de fichaje: el manejador POST que crea 
 
 ---
 
+## Development Plan
+
+See [Development Plan](openspec/development-plan.md) for the full list of planned user stories.
+
+---
+
 ## Stack tecnológico
 
 | Área | Tecnología |
