@@ -31,12 +31,30 @@ The installer creates **relative symlinks** in your project root pointing to eve
 | `.claude/` → `dln-spec-kit/.claude/` | Claude Code |
 | `.cursor/` → `dln-spec-kit/.cursor/` | Cursor |
 | `.codex/` → `dln-spec-kit/.codex/` | Codex |
+| `.agent/` → `dln-spec-kit/.agent/` | Generic agents |
 | `rules/` → `dln-spec-kit/rules/` | All tools |
 | `.github/copilot-instructions.md` → `dln-spec-kit/.github/...` | GitHub Copilot |
+| `.github/commands/` → `dln-spec-kit/.github/commands/` | GitHub Copilot |
+
+`.github/` is never symlinked as a whole directory — the host project normally keeps its own workflows there — so each entry the kit owns is linked individually.
 
 **The installer is idempotent** — running it again only reports already-installed items without making changes. If a conflict is detected (a file or directory already exists at the destination), it will ask you interactively what to do: skip, overwrite, or back up.
 
 Once installed, every AI copilot will automatically read its configuration files and inherit all company standards.
+
+### Kit layout: one command, five surfaces
+
+Every slash command has a **single source of truth** in `dln-specs/.commands/`. Each assistant surface exposes that same file through a relative symlink, so a command is authored once and behaves identically everywhere:
+
+| Surface | Consumed by | Linked into project root by `install.sh` |
+|---|---|---|
+| `.claude/commands/` | Claude Code | ✅ via the whole `.claude/` directory |
+| `.cursor/commands/` | Cursor | ✅ via the whole `.cursor/` directory |
+| `.codex/commands/` | Codex | ✅ via the whole `.codex/` directory |
+| `.agent/commands/` | Generic agents | ✅ via the whole `.agent/` directory |
+| `.github/commands/` | GitHub Copilot | ✅ linked individually inside `.github/` |
+
+> **Adding a new command**: create the file in `dln-specs/.commands/`, add a symlink to it from **all five** surfaces, then document it in this README. Skipping a surface makes the command silently unavailable for that tool — with no error to warn you.
 
 ---
 
@@ -112,7 +130,7 @@ These commands are available at any point in the workflow — they are not tied 
 
 ### `/meta-prompt`
 **When to use**: You have a raw, non-technical idea or a client request in plain language and want to structure it before starting a User Story.
-**What it does**: Transforms free-form text into a consolidated, structured technical description (role, context, objective, instructions, constraints). Pass the output to `/create-us`.
+**What it does**: Transforms free-form text into a consolidated, structured technical description (role, context, objective, instructions, constraints). If the input is too vague, it first asks up to **5** precise clarifying questions. It then presents the generated prompt and **stops — it never executes the prompt itself**. Pass the output to `/create-us`.
 
 ### `/explain`
 **When to use**: You want to understand a concept, a design decision, or a technical behaviour — not just apply a fix.

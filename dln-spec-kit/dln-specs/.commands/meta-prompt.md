@@ -7,7 +7,7 @@ Given the following non-technical input or idea from the user, your goal is to t
 ## Steps to Follow:
 
 1. **Analyze the Input**: Carefully understand the business goal and requested functionality from the original prompt.
-2. **Clarify (If necessary)**: If the original prompt is too vague, ask the user a maximum of 3 precise questions before generating the final prompt.
+2. **Clarify (If necessary)**: If the original prompt is too vague, ask the user a maximum of 5 precise questions before generating the final prompt.
 3. **Generate Structured Prompt**: Prepare the prompt using best practices for structure:
    - **Role**: Define the expert persona.
    - **Context**: Briefly summarize why this is being done.
