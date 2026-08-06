@@ -49,6 +49,7 @@ class AuthenticationTest extends TestCase
         $response = $this->actingAs($user)->post('/logout');
 
         $this->assertGuest();
-        $response->assertRedirect('/');
+        // US-001 sends users back to the login screen instead of the Breeze default '/'.
+        $response->assertRedirect('/login');
     }
 }

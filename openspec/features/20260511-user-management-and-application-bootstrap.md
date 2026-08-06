@@ -291,8 +291,8 @@ ADMIN_NAME=Administrador
   password change), `isProtectedAdmin()` guard method.~~
 - [ ] **Spec 7**: Filament `EmployeeResource` — list (admin excluded), create, edit,
   delete (with admin-deletion guard).
-- [ ] **Spec 8**: Employee authentication — login controller with inactive-user guard
-  and role-based post-login redirect; logout; remove unused Breeze routes.
+- [x] ~~**Spec 8**: Employee authentication — login controller with inactive-user guard
+  and role-based post-login redirect; logout; remove unused Breeze routes.~~
 - [ ] **Spec 9**: Employee dashboard — `DashboardController`, Blade view, current-month
   records table, conditional clock-in/out button placeholder.
 - [x] ~~**Spec 10**: `ClockRecordPolicy` — ensures employees can only view their own records.~~
