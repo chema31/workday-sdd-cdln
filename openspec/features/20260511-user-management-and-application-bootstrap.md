@@ -293,8 +293,8 @@ ADMIN_NAME=Administrador
   delete (with admin-deletion guard).
 - [x] ~~**Spec 8**: Employee authentication — login controller with inactive-user guard
   and role-based post-login redirect; logout; remove unused Breeze routes.~~
-- [ ] **Spec 9**: Employee dashboard — `DashboardController`, Blade view, current-month
-  records table, conditional clock-in/out button placeholder.
+- [x] ~~**Spec 9**: Employee dashboard — `DashboardController`, Blade view, current-month
+  records table, conditional clock-in/out button placeholder.~~
 - [x] ~~**Spec 10**: `ClockRecordPolicy` — ensures employees can only view their own records.~~
 - [ ] **Spec 11**: Feature tests — all 11 tests green.
 - [ ] **Spec 12**: Blade UI components — `<x-navbar>` (logo + logout), `<x-clock-widget>`
