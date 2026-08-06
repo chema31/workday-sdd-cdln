@@ -286,7 +286,7 @@ ADMIN_NAME=Administrador
 - [x] **Spec 3**: `UserRole` enum + `User` model update — casts, query scopes,
   `canAccessPanel()`, factory states (`admin`, `employee`, `inactive`).
 - [x] ~~**Spec 4**: `ClockRecord` model + factory — relationships, fillable, casts.~~
-- [ ] **Spec 5**: `AdminSeeder` — idempotent seeder reading from `.env`.
+- [x] ~~**Spec 5**: `AdminSeeder` — idempotent seeder reading from `.env`.~~
 - [ ] **Spec 6**: `UserService` — `createEmployee()`, `updateEmployee()` (optional
   password change), `isProtectedAdmin()` guard method.
 - [ ] **Spec 7**: Filament `EmployeeResource` — list (admin excluded), create, edit,

@@ -86,6 +86,23 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Seeded Administrator Account
+    |--------------------------------------------------------------------------
+    |
+    | Credentials of the administrator account created by AdminSeeder. They are
+    | read through config() rather than env() so they keep working once the
+    | configuration is cached in production, where env() returns null.
+    |
+    */
+
+    'admin_email' => env('ADMIN_EMAIL'),
+
+    'admin_name' => env('ADMIN_NAME', 'Administrador'),
+
+    'admin_password' => env('ADMIN_PASSWORD'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Encryption Key
     |--------------------------------------------------------------------------
     |
