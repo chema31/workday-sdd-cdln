@@ -287,8 +287,8 @@ ADMIN_NAME=Administrador
   `canAccessPanel()`, factory states (`admin`, `employee`, `inactive`).
 - [x] ~~**Spec 4**: `ClockRecord` model + factory — relationships, fillable, casts.~~
 - [x] ~~**Spec 5**: `AdminSeeder` — idempotent seeder reading from `.env`.~~
-- [ ] **Spec 6**: `UserService` — `createEmployee()`, `updateEmployee()` (optional
-  password change), `isProtectedAdmin()` guard method.
+- [x] ~~**Spec 6**: `UserService` — `createEmployee()`, `updateEmployee()` (optional
+  password change), `isProtectedAdmin()` guard method.~~
 - [ ] **Spec 7**: Filament `EmployeeResource` — list (admin excluded), create, edit,
   delete (with admin-deletion guard).
 - [ ] **Spec 8**: Employee authentication — login controller with inactive-user guard
