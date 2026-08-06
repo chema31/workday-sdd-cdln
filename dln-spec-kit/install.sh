@@ -117,24 +117,29 @@ create_symlink() {
     count_ok=$((count_ok + 1))
 }
 
-create_copilot_symlink() {
-    local src_rel="${KIT_NAME}/.github/copilot-instructions.md"
-    local dest_rel=".github/copilot-instructions.md"
+# Symlinks a single entry from the kit's .github/ into the project's .github/.
+# .github/ must stay a real directory in the host project (it usually holds
+# workflows), so it is never symlinked as a whole — each entry is linked
+# individually.
+create_github_symlink() {
+    local name="$1"
+    local src_rel="${KIT_NAME}/.github/${name}"
+    local dest_rel=".github/${name}"
     local src="${PROJECT_ROOT}/${src_rel}"
     local dest="${PROJECT_ROOT}/${dest_rel}"
     # Relative from inside .github/ to the kit source
     local link_target="../${src_rel}"
-    local label=".github/copilot-instructions.md"
+    local label="$dest_rel"
 
     if [ ! -e "$src" ]; then
-        echo -e "  ${YELLOW}[SKIP]${RESET}  copilot-instructions.md not found in kit, skipping GitHub Copilot setup"
+        echo -e "  ${YELLOW}[SKIP]${RESET}  ${name} not found in kit's .github/, skipping"
         count_skip=$((count_skip + 1))
         return
     fi
 
     local github_dir="${PROJECT_ROOT}/.github"
     if [ -L "$github_dir" ]; then
-        echo -e "  ${RED}[ERROR]${RESET} .github is a symlink — cannot create directory, skipping Copilot setup"
+        echo -e "  ${RED}[ERROR]${RESET} .github is a symlink — cannot create directory, skipping ${label}"
         count_error=$((count_error + 1))
         return
     fi
@@ -167,8 +172,10 @@ GITIGNORE_ENTRIES=(
     ".claude"
     ".cursor"
     ".codex"
+    ".agent"
     "rules"
     ".github/copilot-instructions.md"
+    ".github/commands"
 )
 
 update_gitignore() {
@@ -208,9 +215,11 @@ main() {
     create_symlink "${KIT_NAME}/.claude"   ".claude"
     create_symlink "${KIT_NAME}/.cursor"   ".cursor"
     create_symlink "${KIT_NAME}/.codex"    ".codex"
+    create_symlink "${KIT_NAME}/.agent"    ".agent"
     create_symlink "${KIT_NAME}/rules"     "rules"
 
-    create_copilot_symlink
+    create_github_symlink "copilot-instructions.md"
+    create_github_symlink "commands"
 
     update_gitignore
 
