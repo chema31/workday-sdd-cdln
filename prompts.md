@@ -1,7 +1,7 @@
 # prompts.md — Development Session Log
 
 This file is updated automatically by the `UserPromptSubmit` Claude Code hook
-(configured in `accom-spec-kit/.claude/settings.local.json`) for slash commands
+(configured in `dln-spec-kit/.claude/settings.local.json`) for slash commands
 typed directly in chat. Commands invoked via the VSCode command palette (with
 attachments or structured `<command-args>`) are added manually as retroactive entries.
 
@@ -74,3 +74,55 @@ Final state: 24 ACs, 11 tests, 13 specs + Playwright.
 ## 2026-05-12 12:39 — /generate-specs-from-us
 **Args:**
 > openspec/features/20260511-user-management-and-application-bootstrap.md
+
+## 2026-05-12 15:48 — /develop-frontend
+**Args:** none
+
+## 2026-05-12 15:51 — /develop-frontend
+**Args:**
+> openspec/specs/20260512-us001-spec0-tailwind-brand-config.md
+
+## 2026-05-12 16:31 — /complete-spec
+**Args:**
+> Spec0
+
+## 2026-05-12 16:33 — /complete-spec
+**Args:**
+> spec 1
+
+## 2026-05-12 16:36 — /develop-backend
+**Args:**
+> openspec/specs/20260512-us001-spec2-database-migrations.md
+
+## 2026-05-12 17:23 — /complete-spec
+**Args:**
+> spec2
+
+## 2026-05-13 18:03 — /develop-backend
+**Args:** none
+
+## 2026-05-13 18:13 — /complete-spec
+**Args:**
+> openspec/specs/20260512-us001-spec3-user-role-enum-and-model.md
+
+---
+
+<!-- SESSION: 2026-05-29 -->
+
+## 2026-05-29 — symlink migration  ← (retroactive, non-slash)
+**Action:** Replace all broken accom-specs symlinks with dln-specs across dln-spec-kit (.agent, .claude, .codex, .cursor, .github). Remove backend-developer.md, add laravel-developer.md, ci-developer.md, python-developer.md.
+**Result:** 50 symlinks updated/recreated, 0 broken symlinks remaining.
+
+## 2026-05-29 — /meta-prompt  ← (retroactive)
+**Args:**
+> Introduce a skill to log every executed prompt to prompts.md persistently across sessions, as a historical audit trail for this training project.
+**Result:** UserPromptSubmit hook added to dln-spec-kit/.claude/settings.local.json. prompt-history skill created. prompts.md header corrected.
+
+## 2026-05-29 — /meta-prompt  ← (retroactive)
+**Args:**
+> Update README.md: add dln-spec-kit SDD framework section with link, rebrand fichaccom→workday-sdd-cdln and We-Accom/Accom→Chema de la Nieta, add gitignore academic note.
+**Result:** README.md updated — title, 5 brand references replaced, SDD framework section added, gitignore note added.
+
+## 2026-05-29 — rebrand dln-spec-kit/README.md  ← (retroactive, non-slash)
+**Action:** Replace "Accom Spec-Kit" with "DLN Spec-Kit" in dln-spec-kit/README.md (title and intro line).
+**Result:** 2 references replaced, 0 remaining.

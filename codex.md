@@ -1,1 +1,1 @@
-accom-spec-kit/codex.md
+dln-spec-kit/codex.md

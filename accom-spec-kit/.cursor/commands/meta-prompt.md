@@ -1,1 +1,0 @@
-../../accom-specs/.commands/meta-prompt.md

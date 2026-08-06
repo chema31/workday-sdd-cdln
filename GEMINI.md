@@ -1,1 +1,1 @@
-accom-spec-kit/GEMINI.md
+dln-spec-kit/GEMINI.md

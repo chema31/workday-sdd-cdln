@@ -1,0 +1,76 @@
+---
+description: CodeIgniter 4 standards for DLN commercial website projects. Covers simple MVC architecture, routing, views, and minimal testing. General naming and data type rules are in coding-standards.mdc.
+alwaysApply: true
+---
+
+# CodeIgniter 4 Standards
+
+> **Note for AI agents**: Read the project's `README.md` first to confirm this is a CI4 project and identify any project-specific overrides. General naming and data type rules are in `rules/coding-standards.mdc` — this file only extends them with CI4-specific conventions.
+
+---
+
+## When to Use CI4
+
+CodeIgniter 4 is used exclusively for **simple commercial websites** with at most one database connection. These projects prioritise speed of development over strict architecture. If business logic grows beyond simple data display, escalate to the development lead for a technology review.
+
+---
+
+## Version and Requirements
+
+- **PHP**: Minimum **PHP 8.2**.
+- **CodeIgniter**: Latest stable CI4 version.
+
+---
+
+## Architecture: Simple MVC
+
+CI4 projects follow a straightforward MVC structure. There is **no service layer** — logic lives directly in controllers, as these sites have minimal business logic.
+
+```
+app/
+├── Controllers/       # One controller per section/feature
+├── Models/            # CI4 Models for DB access
+├── Views/             # One view per route
+├── Config/            # Application configuration
+└── Filters/           # Route filters (auth, CSRF, etc.)
+```
+
+**One view per route**: each route renders exactly one view file. Keep views clean — no complex logic in PHP view files.
+
+```php
+// Controller: simple and direct
+class TarifasController extends BaseController
+{
+    public function index(): string
+    {
+        $model = new TarifaModel();
+        $data  = ['tarifas' => $model->findAll()];
+        return view('tarifas/index', $data);
+    }
+}
+```
+
+---
+
+## Database Access
+
+- Use CI4 Models for all DB queries.
+- Maximum one database connection per project.
+- Never write raw SQL with interpolated user input — always use query builder bindings.
+
+---
+
+## Testing
+
+- Formal testing is **not mandatory** for CI4 projects given their rapid-development focus.
+- If tests are written, use CI4's built-in `CIUnitTestCase`.
+- Verify manually that the application runs without errors before opening a PR.
+
+---
+
+## Code Quality Checklist Before PR
+
+- [ ] Application runs without errors.
+- [ ] Each new route has a corresponding view file.
+- [ ] No credentials hardcoded — use environment variables or CI4 config files.
+- [ ] No raw SQL with interpolated user input.

@@ -1,0 +1,144 @@
+---
+description: DLN team Git workflow standards based on adapted Gitflow. Covers branch strategy, naming conventions, pull requests, CI/CD environments, and tagging. Applies to all projects hosted in Bitbucket (https://bitbucket.org/dln).
+alwaysApply: true
+---
+
+# Git Standards
+
+## 1. Branch Model
+
+Three permanent branch types exist across projects:
+
+| Branch | Stability | Deployed to |
+|---|---|---|
+| `master` / `main` | Always stable — mirrors production code | PRE (3-branch model) / PRO (2-branch model) |
+| `develop` | Integration — code not yet approved for production | PRE |
+| `production` | Optional, high-change projects only | PRO |
+
+**Absolute rules:**
+- **Direct commits to `master`, `main`, or `develop` are forbidden.** All integrations must go through a Pull Request.
+- `develop` originates from `master`/`main`.
+- In 3-branch projects, deploying to PRO always requires a PR from `master` → `production`.
+
+### CI/CD Environment Mapping
+
+| Model | Branch | Environment |
+|---|---|---|
+| 3-branch | `production` | PRO |
+| 3-branch | `master` / `main` | PRE |
+| 3-branch | `develop` | PRE |
+| 2-branch | `master` / `main` | PRO |
+| 2-branch | `develop` | PRE |
+
+---
+
+## 2. Branch Types
+
+Each working branch corresponds to **exactly one User Story**.
+
+### Feature
+
+A feature branch implements an evolutionary development aligned with a User Story.
+
+- **Created from**: `develop`
+- **Merged into**: `develop` (via Pull Request)
+- **Naming pattern**: `feature/YYYYMMDD_[ticketID_if_exists]_description_without_spaces`
+- **Examples**: `feature/20260514_18799_new_position_search`, `feature/20260514_candidate_profile`
+- **After merge**: branch must be deleted from remote.
+
+### Hotfix
+
+A hotfix branch implements a corrective or urgent fix aligned with a User Story.
+
+- **Created from**: `master` or `main`
+- **Merged into**: **both** `master`/`main` AND `develop` (two separate Pull Requests)
+- **Naming pattern**: `hotfix/YYYYMMDD_[ticketID_if_exists]_description_without_spaces`
+- **Examples**: `hotfix/20260514_18800_fix_login_token`, `hotfix/20260514_payment_null_pointer`
+- **After merge**: branch must be deleted from remote.
+
+---
+
+## 3. Commit and Push Rules
+
+- **Push immediately after every commit.** Never accumulate local commits — local and remote branches must remain in sync at all times.
+- All commit messages must be written in **English**.
+- Commits must be atomic and focused on a single logical change.
+- Never commit directly to `master`, `main`, or `develop`.
+
+### .gitignore Requirements
+
+The following files **must always be listed in `.gitignore`** and must never be committed to the repository:
+
+- `package-lock.json`
+- `composer.lock`
+
+Before every commit, verify these entries exist in `.gitignore`. If they are missing, add them before staging any files.
+
+---
+
+## 4. Pull Request Rules
+
+### Before opening a PR
+
+1. Merge the base branch into the working branch locally and resolve any conflicts:
+   - For **features**: `git merge develop` into the feature branch.
+   - For **hotfixes**: `git merge master` (or `main`) into the hotfix branch.
+2. Verify the build and tests pass on the merged result before opening the PR.
+
+### PR targets
+
+| Branch type | PR target |
+|---|---|
+| `feature/*` | `develop` |
+| `hotfix/*` | `master` / `main` **and** `develop` (two separate PRs) |
+
+### Reviewer requirements
+
+| Target branch | Minimum approvals |
+|---|---|
+| `develop` | 1 reviewer |
+| `master` / `main` / `production` | 2 reviewers |
+
+### After the PR is merged
+
+- Delete the working branch from remote immediately.
+
+---
+
+## 5. Tags and Versioning
+
+Tags are only created when **explicitly requested** — not on every release.
+
+- **Format**: `X.Y.Z_snake_case_description`
+  - `X`: Major version
+  - `Y`: Minor version
+  - `Z`: Hotfix version
+- **Examples**: `1.2.2_new_collection_standards`, `2.0.0_dln_json_integration`
+- Follows [Semantic Versioning](https://semver.org/).
+
+---
+
+## 6. AI Agent Git Checklist
+
+Verify all applicable items before each Git operation:
+
+### Before creating a branch
+- [ ] Branch type matches the User Story type (`feature` for evolutionary, `hotfix` for corrective/urgent).
+- [ ] Branch is created from the correct base: `develop` for features, `master`/`main` for hotfixes.
+- [ ] Branch name follows `type/YYYYMMDD_[ticketID_]description` with underscores and no spaces.
+
+### Before each commit
+- [ ] Commit message is in English.
+- [ ] Changes are atomic and focused.
+- [ ] Push to remote immediately after committing.
+- [ ] `package-lock.json` and `composer.lock` are listed in `.gitignore` and not staged.
+
+### Before opening a Pull Request
+- [ ] Base branch has been merged into the working branch locally.
+- [ ] Conflicts resolved and build/tests pass.
+- [ ] PR targets the correct branch: `develop` for features; `master`/`main` for hotfixes (plus a second PR to `develop` for hotfixes).
+- [ ] Required reviewer count noted: 1 for `develop`, 2 for `master`/`main`/`production`.
+
+### After Pull Request is merged
+- [ ] Working branch deleted from remote.
+- [ ] For hotfixes: confirm **both** PRs (to `master` and to `develop`) are merged before deleting the branch.

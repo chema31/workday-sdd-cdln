@@ -277,15 +277,15 @@ ADMIN_NAME=Administrador
 
 ## Implementation Checklist
 
-- [ ] **Spec 0**: Accom brand Tailwind config — register `accom-teal`, `accom-teal-light`,
+- [x] **Spec 0**: Accom brand Tailwind config — register `accom-teal`, `accom-teal-light`,
   `accom-pink` tokens in `tailwind.config.js`; confirm `npm run dev` compiles without errors.
-- [ ] **Spec 1**: Laravel 11 bootstrap — fresh install, Filament 3, Laravel Breeze
+- [x] **Spec 1**: Laravel 11 bootstrap — fresh install, Filament 3, Laravel Breeze
   (Blade stack, unused routes disabled), `.env.example` with admin vars.
-- [ ] **Spec 2**: Database migrations — `add_role_and_is_active_to_users_table` +
+- [x] **Spec 2**: Database migrations — `add_role_and_is_active_to_users_table` +
   `create_clock_records_table`.
-- [ ] **Spec 3**: `UserRole` enum + `User` model update — casts, query scopes,
+- [x] **Spec 3**: `UserRole` enum + `User` model update — casts, query scopes,
   `canAccessPanel()`, factory states (`admin`, `employee`, `inactive`).
-- [ ] **Spec 4**: `ClockRecord` model + factory — relationships, fillable, casts.
+- [x] ~~**Spec 4**: `ClockRecord` model + factory — relationships, fillable, casts.~~
 - [ ] **Spec 5**: `AdminSeeder` — idempotent seeder reading from `.env`.
 - [ ] **Spec 6**: `UserService` — `createEmployee()`, `updateEmployee()` (optional
   password change), `isProtectedAdmin()` guard method.

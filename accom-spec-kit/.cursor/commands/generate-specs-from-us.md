@@ -1,1 +1,0 @@
-../../accom-specs/.commands/generate-specs-from-us.md
