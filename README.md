@@ -2,6 +2,8 @@
 
 Aplicación web monolítica para la gestión del fichaje de empleados: registro de entradas y salidas, administración del personal y consulta del historial de asistencia mensual.
 
+> ⚠️ **Desarrollo en curso.** Este documento describe el producto objetivo, no lo que ya funciona. US-001 está a medias (5 de sus 14 specs implementadas) y la lógica de fichaje aún no existe: el botón es un placeholder sin escritura. Las secciones funcional, de roles y de arquitectura reflejan el diseño previsto; la fuente de verdad sobre el estado real es la tabla [Estado del proyecto](#estado-del-proyecto-us-001) y el [plan de desarrollo](openspec/development-plan.md).
+
 ---
 
 ## Framework de desarrollo: dln-spec-kit
@@ -48,7 +50,7 @@ Las cuentas inactivas quedan bloqueadas en el login con el mensaje `"Your accoun
 
 ---
 
-## Funcionalidades incluidas (US-001)
+## Alcance funcional de US-001
 
 - Control de acceso basado en roles: enum `admin` / `employee` con casteo nativo en el modelo.
 - Panel de administración con CRUD completo de empleados (Filament 3.x), excluye la cuenta admin del listado.
@@ -173,7 +175,7 @@ El logo se renderiza como SVG inline con los valores hexadecimales de marca. No 
 | Spec 1 | Bootstrap Laravel 11 + Filament + Breeze | ✅ Completada |
 | Spec 2 | Migraciones de base de datos | ✅ Completada |
 | Spec 3 | Enum `UserRole` + modelo `User` + estados de factory | ✅ Completada |
-| Spec 4 | Modelo `ClockRecord` + factory | ⏳ Pendiente |
+| Spec 4 | Modelo `ClockRecord` + factory | ✅ Completada |
 | Spec 5 | `AdminSeeder` idempotente desde `.env` | ⏳ Pendiente |
 | Spec 6 | `UserService` (crear, editar, guardia admin) | ⏳ Pendiente |
 | Spec 7 | `EmployeeResource` de Filament (CRUD completo) | ⏳ Pendiente |
