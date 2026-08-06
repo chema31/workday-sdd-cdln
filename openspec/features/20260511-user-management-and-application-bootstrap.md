@@ -297,7 +297,7 @@ ADMIN_NAME=Administrador
   records table, conditional clock-in/out button placeholder.~~
 - [x] ~~**Spec 10**: `ClockRecordPolicy` — ensures employees can only view their own records.~~
 - [ ] **Spec 11**: Feature tests — all 11 tests green.
-- [ ] **Spec 12**: Blade UI components — `<x-navbar>` (logo + logout), `<x-clock-widget>`
+- [x] ~~**Spec 12**: Blade UI components — `<x-navbar>` (logo + logout), `<x-clock-widget>`
   (card with status dot and action button), `TimeGreetingHelper`, login page layout with
-  Accom branding. Visual check: `npm run dev` confirms login and dashboard render correctly.
+  Accom branding. Visual check: `npm run dev` confirms login and dashboard render correctly.~~
 - [ ] Functional Tests (Playwright)

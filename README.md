@@ -163,7 +163,9 @@ Tokens de marca registrados en `tailwind.config.js`:
 | `accom-teal-light` | `#E8F9F8` | Fondos de tarjeta, hover, etiquetas |
 | `accom-pink` | `#E8195A` | Botón de salida, mensajes de error, acciones destructivas |
 
-El logo se renderiza como SVG inline con los valores hexadecimales de marca. No se usan archivos de imagen externos ni CSS personalizado: solo clases de utilidad de Tailwind.
+El logo se renderiza como SVG inline con los valores hexadecimales de marca, mediante el componente `<x-brand-logo>` que comparten el navbar y la pantalla de acceso. No se usan archivos de imagen externos ni CSS personalizado: solo clases de utilidad de Tailwind.
+
+> El SVG del logo es una aproximación. Debe sustituirse por el asset oficial cuando esté disponible.
 
 ---
 
