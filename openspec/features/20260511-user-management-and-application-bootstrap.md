@@ -289,8 +289,8 @@ ADMIN_NAME=Administrador
 - [x] ~~**Spec 5**: `AdminSeeder` — idempotent seeder reading from `.env`.~~
 - [x] ~~**Spec 6**: `UserService` — `createEmployee()`, `updateEmployee()` (optional
   password change), `isProtectedAdmin()` guard method.~~
-- [ ] **Spec 7**: Filament `EmployeeResource` — list (admin excluded), create, edit,
-  delete (with admin-deletion guard).
+- [x] ~~**Spec 7**: Filament `EmployeeResource` — list (admin excluded), create, edit,
+  delete (with admin-deletion guard).~~
 - [x] ~~**Spec 8**: Employee authentication — login controller with inactive-user guard
   and role-based post-login redirect; logout; remove unused Breeze routes.~~
 - [x] ~~**Spec 9**: Employee dashboard — `DashboardController`, Blade view, current-month
