@@ -150,6 +150,34 @@ Extiende la migración por defecto de Laravel con dos columnas adicionales:
 | `npm run dev` | Vite en modo watch |
 | `php artisan test` | Ejecuta la suite de tests |
 | `php artisan migrate:fresh --seed` | Reinicia la base de datos y siembra de nuevo |
+| `npx playwright test` | Ejecuta los tests funcionales E2E |
+
+---
+
+## Tests funcionales (Playwright)
+
+Los cuatro escenarios E2E de US-001 viven en `tests/e2e/user-management.spec.ts` y cubren el acceso del empleado, el bloqueo de cuentas inactivas, la redirección del administrador y el CRUD de empleados en Filament.
+
+**Aislamiento de datos.** Los tests ejecutan `migrate:fresh` antes de cada escenario, así que **nunca deben apuntar a la base de datos de desarrollo**. Para ello usan `--env=testing`, que carga `.env.testing`. Ese fichero está en `.gitignore` porque contiene credenciales, así que hay que crearlo la primera vez:
+
+```bash
+cp .env .env.testing
+sed -i 's/^APP_ENV=.*/APP_ENV=testing/' .env.testing
+sed -i 's/^DB_DATABASE=.*/DB_DATABASE=fichaccom_e2e/' .env.testing
+php artisan key:generate --env=testing
+```
+
+Crea también la base de datos `fichaccom_e2e`. `playwright.config.ts` arranca el servidor con `php artisan serve --env=testing`, de modo que aplicación y datos comparten esa base aislada.
+
+**Puesta en marcha y ejecución:**
+
+```bash
+npm install                  # instala @playwright/test
+npx playwright install chromium
+npx playwright test
+```
+
+Los escenarios se ejecutan en serie (`workers: 1`), porque comparten la base de datos y cada uno la reinicia.
 
 ---
 

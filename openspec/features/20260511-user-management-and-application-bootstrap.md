@@ -300,4 +300,4 @@ ADMIN_NAME=Administrador
 - [x] ~~**Spec 12**: Blade UI components — `<x-navbar>` (logo + logout), `<x-clock-widget>`
   (card with status dot and action button), `TimeGreetingHelper`, login page layout with
   Accom branding. Visual check: `npm run dev` confirms login and dashboard render correctly.~~
-- [ ] Functional Tests (Playwright)
+- [x] ~~Functional Tests (Playwright)~~
