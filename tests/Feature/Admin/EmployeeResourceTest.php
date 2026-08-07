@@ -10,6 +10,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Livewire;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class EmployeeResourceTest extends TestCase
@@ -97,13 +98,22 @@ class EmployeeResourceTest extends TestCase
         );
     }
 
-    public function test_admin_cannot_create_employee_with_weak_password(): void
+    public static function weakPasswords(): array
+    {
+        return [
+            'no number' => ['password'],
+            'too short' => ['12345'],
+        ];
+    }
+
+    #[DataProvider('weakPasswords')]
+    public function test_admin_cannot_create_employee_with_weak_password(string $weakPassword): void
     {
         Livewire::test(CreateEmployee::class)
             ->fillForm([
                 'name' => 'Ada Lovelace',
                 'email' => 'ada@example.com',
-                'password' => 'password',
+                'password' => $weakPassword,
                 'is_active' => true,
             ])
             ->call('create')
