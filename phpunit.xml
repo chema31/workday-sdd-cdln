@@ -22,7 +22,9 @@
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="CACHE_STORE" value="array"/>
-        <!-- SQLite in-memory preferred; using MySQL test DB because pdo_sqlite unavailable on this host -->
+        <!-- Deliberate: tests run against MySQL, the same engine as development and
+             production, so enum columns and whereMonth/whereYear behaviour are really
+             exercised. This supersedes Spec 11's SQLite in-memory criterion. -->
         <env name="DB_CONNECTION" value="mysql"/>
         <env name="DB_DATABASE" value="fichaccom_test"/>
         <env name="DB_HOST" value="127.0.0.1"/>
