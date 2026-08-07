@@ -301,3 +301,7 @@ ADMIN_NAME=Administrador
   (card with status dot and action button), `TimeGreetingHelper`, login page layout with
   Accom branding. Visual check: `npm run dev` confirms login and dashboard render correctly.~~
 - [x] ~~Functional Tests (Playwright)~~
+- [ ] **Spec 13**: Dockerised environment with Laravel Sail — `docker-compose.yml`, PHP 8.4
+  runtime, MySQL on host port 3307, and both test suites running inside the containers.
+- [ ] **Spec 14**: Manual test plan — step-by-step browser script covering AC-01 to AC-24,
+  including the styling criteria no automated test can assert.
